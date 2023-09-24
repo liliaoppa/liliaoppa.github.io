@@ -197,8 +197,7 @@ font-size: 1.3em;
 #about img{
   width: 30%;
   height: auto;
-  object-fit: cover;
-  margin-right: 20px;
+  object-fit: fill;
 }
 
 /* education Section */
