@@ -342,6 +342,24 @@ color: #74808a;
 margin: 0 0 15px 0;
 font-size: 1.3em;
 }
+#funprojects {
+  padding: 50px 15px;
+  border-bottom: 1px solid #dcd9d9;
+  text-align: center;
+  }
+  #funprojects h2 {
+  color: #374054;
+  margin-bottom: 50px;
+  }
+  .funprojects {
+  position: relative;
+  max-width: 900px;
+  margin: 0 auto 30px auto;
+  overflow: hidden;
+  background: #fff;
+  border-radius: 4.5px;
+  border: 3px solid #949494;
+  }
 #more-projects {
 display: none;
 }

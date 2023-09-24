@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>WebPanelView</title>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="author" content="Li Liao">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
+    <link rel="icon" href="favicon.ico" type="image/x-icon">
+    <link rel="stylesheet" href="libs/font-awesome/css/font-awesome.min.css">
+    <link rel="stylesheet" href="../assets/css/styles.css">
+    <link rel="stylesheet" href="../assets/css/effects.css">
+    <link rel="stylesheet" href="../assets/css/retro.css">
+    <script src="https://d3js.org/d3.v6.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
+
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+    <style>
+        .placeholder {
+            border: 1px dashed transparent;
+        }
+        #treatgroup {
+            color: #F97876;
+        }
+        .control {
+            color: #76F9ED;
+        }
+        .tooltip {
+            position: relative;
+            display: inline-block;
+        }
+        .tooltip .tooltiptext {
+            visibility: hidden;
+            width: 120px;
+            background-color: #555;
+            color: #fff;
+            text-align: center;
+            border-radius: 6px;
+            padding: 5px 0;
+            position: absolute;
+            z-index: 1;
+            bottom: 125%; /* Position the tooltip above the text */
+            left: 50%;
+            margin-left: -60px; /* Use half of the width (120/2 = 60) to center the tooltip */
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        .tooltip:hover .tooltiptext {
+            visibility: visible;
+            opacity: 1;
+        }
+        #chart {
+            width: 80%; /* Adjust as needed */
+            height: 80%; /* Adjust as needed */
+            margin: auto; /* Centers the div */
+        }
+    </style>
+</head>
+<body>
+
+    <div id="contact-me">
+    <div id="contact-me-overlay">
+        <h1 class="heading">PanelView Web Version</h1>
+
+        <div class="project shadow-large">
+            <label for="plotOptions">Plot Options</label>
+            <select class="form-control" id="plotOptions">
+                <option id = "missing">missing</option>
+                <option id = "treatment">treatment</option>
+                <!-- Add more options as needed -->
+            </select>
+        </div>
+                
+        <div class="project shadow-large">
+            <label for="dataFile">Upload Data File</label>
+            <input type="file" class="form-control-file" id="dataFile">
+        </div>
+        
+        <div class="project shadow-large">
+            <label>Variables</label>
+            <ul id="variables" class="list-group sortable">
+                <li class="list-group-item placeholder"></li>
+            </ul>
+        </div>
+        
+        <div class="project shadow-large" id="dvGroup">
+            <label>Dependent Variable</label>
+            <ul id="dv" class="list-group sortable">
+                <li class="list-group-item placeholder"></li>
+            </ul>
+        </div>
+        
+        <div class="project shadow-large" id="ivGroup">
+            <label>Independent Variables</label>
+            <ul id="iv" class="list-group sortable">
+                <li class="list-group-item placeholder"></li>
+            </ul>
+        </div>
+        
+        <div class="project shadow-large" id="indGroup">
+            <label>Index Variables</label>
+            <ul id="ind" class="list-group sortable">
+                <li class="list-group-item placeholder"></li>
+            </ul>
+        </div>
+        
+        <div class="project shadow-large" id="missingGroup">
+            <label>Missing Variables</label>
+            <ul id="missing" class="list-group sortable">
+                <li class="list-group-item placeholder"></li>
+            </ul>
+        </div>
+        
+        <button id="draw" class="btn btn-primary">Draw</button>
+    
+        </div>
+    </div>
+
+    <section id="about">
+        <div id = "content"></div>
+    </section>
+
+    <script src="panelview.js"></script>
+</body>
+</html>
