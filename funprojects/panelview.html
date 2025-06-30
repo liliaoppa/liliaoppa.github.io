@@ -14,113 +14,447 @@
     <script src="https://d3js.org/d3.v6.min.js"></script>
     <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
     <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
     <style>
+        body {
+            font-family: 'retro1', sans-serif;
+            cursor: URL("../assets/img/cursor/cursor.png"), auto !important;
+            background: #f5f5f5;
+            min-height: 100vh;
+        }
+        
+        .container-fluid {
+            padding: 20px;
+        }
+        
+        .project {
+            margin-bottom: 20px;
+            border-radius: 0;
+            border: 2px solid #333;
+            box-shadow: 4px 4px 0px #333;
+            background: #fff;
+            padding: 20px;
+        }
+        
+        .shadow-large {
+            box-shadow: 4px 4px 0px #333;
+        }
+        
+        label {
+            font-family: 'retro', sans-serif;
+            font-weight: bold;
+            font-size: 1.2em;
+            color: #333;
+            margin-bottom: 15px;
+            display: block;
+        }
+        
+        select, input[type="file"] {
+            border-radius: 0;
+            border: 2px solid #333;
+            font-family: 'retro1', sans-serif;
+            padding: 10px;
+            width: 100%;
+            background: #fff;
+        }
+        
+        select:focus, input[type="file"]:focus {
+            border-color: #3498db;
+            box-shadow: none;
+            outline: none;
+        }
+        
+        .btn {
+            border-radius: 0;
+            border: 2px solid #333;
+            font-family: 'retro1', sans-serif;
+            font-weight: bold;
+            text-transform: uppercase;
+            box-shadow: 2px 2px 0px #333;
+            transition: all 0.2s;
+            background: #3498db;
+            color: #fff;
+            padding: 12px 24px;
+            font-size: 16px;
+        }
+        
+        .btn:hover {
+            transform: translate(1px, 1px);
+            box-shadow: 1px 1px 0px #333;
+            background: #2980b9;
+            color: #fff;
+        }
+        
+        .sortable {
+            list-style-type: none;
+            margin: 0;
+            padding: 10px;
+            min-height: 60px;
+            border: 2px solid #333;
+            background: #f9f9f9;
+            border-radius: 0;
+        }
+        
+        .sortable li {
+            margin: 5px;
+            padding: 10px;
+            background: #3498db;
+            color: #fff;
+            border: 2px solid #333;
+            font-family: 'retro1', sans-serif;
+            font-weight: bold;
+            cursor: move;
+            border-radius: 0;
+            box-shadow: 2px 2px 0px #333;
+        }
+        
+        .sortable li:hover {
+            background: #2980b9;
+            transform: translate(1px, 1px);
+            box-shadow: 1px 1px 0px #333;
+        }
+        
         .placeholder {
-            border: 1px dashed transparent;
+            border: 2px dashed #999 !important;
+            background: transparent !important;
+            color: #999 !important;
+            box-shadow: none !important;
+            min-height: 40px;
         }
+        
+        .placeholder:before {
+            content: "拖拽变量到此处";
+            font-style: italic;
+            opacity: 0.7;
+        }
+        
         #treatgroup {
-            color: #F97876;
+            color: #e74c3c;
+            background: #e74c3c;
         }
+        
         .control {
-            color: #76F9ED;
+            color: #27ae60;
+            background: #27ae60;
         }
+        
         .tooltip {
-            position: relative;
-            display: inline-block;
+            font-family: 'retro1', sans-serif !important;
+            border-radius: 0 !important;
+            border: 2px solid #333 !important;
+            box-shadow: 2px 2px 0px #333 !important;
         }
+        
         .tooltip .tooltiptext {
             visibility: hidden;
-            width: 120px;
-            background-color: #555;
+            width: 150px;
+            background-color: #333;
             color: #fff;
             text-align: center;
-            border-radius: 6px;
-            padding: 5px 0;
+            border-radius: 0;
+            border: 2px solid #333;
+            padding: 8px;
             position: absolute;
-            z-index: 1;
-            bottom: 125%; /* Position the tooltip above the text */
+            z-index: 1000;
+            bottom: 125%;
             left: 50%;
-            margin-left: -60px; /* Use half of the width (120/2 = 60) to center the tooltip */
+            margin-left: -75px;
             opacity: 0;
             transition: opacity 0.3s;
+            font-family: 'retro1', sans-serif;
+            box-shadow: 2px 2px 0px #666;
         }
+        
         .tooltip:hover .tooltiptext {
             visibility: visible;
             opacity: 1;
         }
-        #chart {
-            width: 80%; /* Adjust as needed */
-            height: 80%; /* Adjust as needed */
-            margin: auto; /* Centers the div */
+        
+        #chart, #content {
+            width: 100%;
+            min-height: 500px;
+            margin: 20px 0;
+            border: 2px solid #333;
+            border-radius: 0;
+            padding: 20px;
+            background: #fff;
+            box-shadow: 4px 4px 0px #333;
+        }
+        
+        .heading {
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+            font-family: 'retro', sans-serif;
+            color: #333;
+        }
+        
+        #contact-me {
+            padding: 20px 0;
+            background: #f5f5f5;
+        }
+        
+        #contact-me-overlay {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        
+        /* 变量分组颜色 */
+        #dv .sortable li {
+            background: #e74c3c; /* 红色 - 因变量 */
+        }
+        
+        #iv .sortable li {
+            background: #3498db; /* 蓝色 - 自变量 */
+        }
+        
+        #ind .sortable li {
+            background: #f39c12; /* 橙色 - 指标变量 */
+        }
+        
+        #missing .sortable li {
+            background: #95a5a6; /* 灰色 - 缺失变量 */
+        }
+        
+        /* 隐藏不需要的组 */
+        .hidden-group {
+            display: none;
+        }
+        
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .container, #contact-me-overlay {
+                padding: 0 10px;
+            }
+            
+            .heading {
+                font-size: 1.8em;
+            }
+            
+            .btn {
+                display: block;
+                width: 100%;
+                margin: 10px 0;
+            }
+            
+            nav .btn {
+                display: inline-block;
+                width: auto;
+                margin: 0 5px;
+                font-size: 12px;
+                padding: 8px 12px;
+            }
+            
+            .sortable li {
+                font-size: 14px;
+                padding: 8px;
+            }
+            
+            .project {
+                margin-bottom: 15px;
+                padding: 15px;
+            }
+        }
+        
+        /* 加载动画 */
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #3498db;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 10px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* 成功和错误消息 */
+        .alert {
+            padding: 15px;
+            margin: 15px 0;
+            border: 2px solid #333;
+            border-radius: 0;
+            font-family: 'retro1', sans-serif;
+        }
+        
+        .alert-success {
+            background: #d4edda;
+            border-color: #27ae60;
+            color: #155724;
+        }
+        
+        .alert-error {
+            background: #f8d7da;
+            border-color: #e74c3c;
+            color: #721c24;
         }
     </style>
 </head>
 <body>
+    <!-- Navigation Header -->
+    <nav style="background: #333; padding: 15px 0; border-bottom: 3px solid #fff;">
+        <div class="container">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <h2 style="color: #fff; margin: 0; font-family: 'retro', sans-serif;">
+                    <i class="fa fa-chart-bar"></i> PanelView 数据可视化系统
+                </h2>
+                <div>
+                    <a href="../index.html" class="btn btn-primary" style="margin-right: 10px;">
+                        <i class="fa fa-home"></i> 返回首页
+                    </a>
+                    <a href="#" class="btn btn-primary" onclick="resetAll()">
+                        <i class="fa fa-refresh"></i> 重置
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
 
     <div id="contact-me">
     <div id="contact-me-overlay">
-        <h1 class="heading">PanelView Web Version</h1>
+        <h1 class="heading">
+            <i class="fa fa-chart-line"></i> PanelView Web 版本
+        </h1>
 
+        <div class="row">
+            <div class="col-md-6">
+                <div class="project shadow-large">
+                    <label for="plotOptions">
+                        <i class="fa fa-cog"></i> 绘图选项
+                    </label>
+                    <select id="plotOptions">
+                        <option value="missing">Missing Pattern 缺失模式</option>
+                        <option value="treatment">Treatment Effect 处理效应</option>
+                    </select>
+                    <small style="color: #666; margin-top: 5px; display: block;">
+                        选择您要分析的数据模式类型
+                    </small>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="project shadow-large">
+                    <label for="dataFile">
+                        <i class="fa fa-upload"></i> 上传数据文件
+                    </label>
+                    <input type="file" id="dataFile" accept=".csv,.xlsx,.xls">
+                    <small style="color: #666; margin-top: 5px; display: block;">
+                        支持 CSV 和 Excel 格式文件
+                    </small>
+                </div>
+            </div>
+        </div>
+        
         <div class="project shadow-large">
-            <label for="plotOptions">Plot Options</label>
-            <select class="form-control" id="plotOptions">
-                <option id = "missing">missing</option>
-                <option id = "treatment">treatment</option>
-                <!-- Add more options as needed -->
-            </select>
-        </div>
-                
-        <div class="project shadow-large">
-            <label for="dataFile">Upload Data File</label>
-            <input type="file" class="form-control-file" id="dataFile">
-        </div>
-        
-        <div class="project shadow-large">
-            <label>Variables</label>
-            <ul id="variables" class="list-group sortable">
-                <li class="list-group-item placeholder"></li>
+            <label>
+                <i class="fa fa-database"></i> 可用变量
+            </label>
+            <ul id="variables" class="sortable">
+                <li class="placeholder"></li>
             </ul>
+            <small style="color: #666;">
+                数据加载后，所有变量将显示在此处。拖拽它们到下方的相应区域。
+            </small>
         </div>
         
-        <div class="project shadow-large" id="dvGroup">
-            <label>Dependent Variable</label>
-            <ul id="dv" class="list-group sortable">
-                <li class="list-group-item placeholder"></li>
-            </ul>
+        <div class="row">
+            <div class="col-md-6">
+                <div class="project shadow-large" id="dvGroup">
+                    <label style="color: #e74c3c;">
+                        <i class="fa fa-bullseye"></i> 因变量 (Dependent Variable)
+                    </label>
+                    <ul id="dv" class="sortable">
+                        <li class="placeholder"></li>
+                    </ul>
+                    <small style="color: #666;">
+                        拖拽您要分析的结果变量到此处
+                    </small>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="project shadow-large" id="ivGroup">
+                    <label style="color: #3498db;">
+                        <i class="fa fa-arrows"></i> 自变量 (Independent Variables)
+                    </label>
+                    <ul id="iv" class="sortable">
+                        <li class="placeholder"></li>
+                    </ul>
+                    <small style="color: #666;">
+                        拖拽解释变量到此处
+                    </small>
+                </div>
+            </div>
         </div>
         
-        <div class="project shadow-large" id="ivGroup">
-            <label>Independent Variables</label>
-            <ul id="iv" class="list-group sortable">
-                <li class="list-group-item placeholder"></li>
-            </ul>
+        <div class="row">
+            <div class="col-md-6">
+                <div class="project shadow-large" id="indGroup">
+                    <label style="color: #f39c12;">
+                        <i class="fa fa-index"></i> 指标变量 (Index Variables)
+                    </label>
+                    <ul id="ind" class="sortable">
+                        <li class="placeholder"></li>
+                    </ul>
+                    <small style="color: #666;">
+                        拖拽用于分组或索引的变量到此处
+                    </small>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="project shadow-large" id="missingGroup">
+                    <label style="color: #95a5a6;">
+                        <i class="fa fa-question-circle"></i> 缺失变量 (Missing Variables)
+                    </label>
+                    <ul id="missing" class="sortable">
+                        <li class="placeholder"></li>
+                    </ul>
+                    <small style="color: #666;">
+                        拖拽存在缺失值的变量到此处
+                    </small>
+                </div>
+            </div>
         </div>
         
-        <div class="project shadow-large" id="indGroup">
-            <label>Index Variables</label>
-            <ul id="ind" class="list-group sortable">
-                <li class="list-group-item placeholder"></li>
-            </ul>
+        <div class="text-center" style="margin-top: 30px; margin-bottom: 20px;">
+            <button id="draw" class="btn" style="font-size: 18px; padding: 15px 30px;">
+                <i class="fa fa-play"></i> 开始绘图
+            </button>
+            <button id="clear" class="btn" style="font-size: 18px; padding: 15px 30px; background: #e74c3c; margin-left: 15px;" onclick="resetAll()">
+                <i class="fa fa-trash"></i> 清空所有
+            </button>
         </div>
-        
-        <div class="project shadow-large" id="missingGroup">
-            <label>Missing Variables</label>
-            <ul id="missing" class="list-group sortable">
-                <li class="list-group-item placeholder"></li>
-            </ul>
-        </div>
-        
-        <button id="draw" class="btn btn-primary">Draw</button>
     
         </div>
     </div>
 
-    <section id="about">
-        <div id = "content"></div>
-    </section>
+    <div style="background: #fff; padding: 30px 0;">
+        <div class="container">
+            <div class="project shadow-large">
+                <label>
+                    <i class="fa fa-chart-area"></i> 可视化结果
+                </label>
+                <div id="content" style="border: 2px solid #333; padding: 20px; background: #fff; min-height: 400px;">
+                    <div style="text-align: center; padding: 50px; color: #666;">
+                        <i class="fa fa-info-circle" style="font-size: 48px; margin-bottom: 20px;"></i>
+                        <p style="font-size: 18px; font-family: 'retro1', sans-serif;">
+                            请上传数据文件并配置变量，然后点击“开始绘图”按钮
+                        </p>
+                        <p style="color: #999; font-size: 14px;">
+                            PanelView 支持缺失数据模式分析和因果推断可视化
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
-    <script src="panelview.js"></script>
+    <script src="../assets/js/panelview.js"></script>
 </body>
 </html>

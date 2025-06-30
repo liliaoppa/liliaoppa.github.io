@@ -4,19 +4,100 @@ let columns;  // Define columns in the global scope
 $(document).ready(function() {
     $('#dataFile').change(function(evt) {
         let file = evt.target.files[0];
-        d3.csv(URL.createObjectURL(file)).then(function(loadedData) {
-            data = loadedData;  // Update data
-            columns = data.columns;  // Store columns
-            console.log(columns)
-            populateVariablesList(columns);
-    
-            // Enable #plotOptions and #draw now that a data file is loaded
-            $('#plotOptions, #draw').prop('disabled', false);
-    
-            // Trigger the change event to set the initial state
-            $('#plotOptions').trigger('change');
-        });
+        
+        if (!file) return;
+        
+        // 显示加载状态
+        showLoading('正在加载数据文件...');
+        
+        // 检查文件类型
+        const fileName = file.name.toLowerCase();
+        
+        if (fileName.endsWith('.csv')) {
+            // 加载 CSV 文件
+            d3.csv(URL.createObjectURL(file)).then(function(loadedData) {
+                processLoadedData(loadedData);
+            }).catch(function(error) {
+                showError('加载 CSV 文件失败: ' + error.message);
+            });
+        } else if (fileName.endsWith('.xlsx') || fileName.endsWith('.xls')) {
+            // 加载 Excel 文件
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const workbook = XLSX.read(e.target.result, {type: 'array'});
+                    const firstSheetName = workbook.SheetNames[0];
+                    const worksheet = workbook.Sheets[firstSheetName];
+                    const jsonData = XLSX.utils.sheet_to_json(worksheet);
+                    
+                    // 转换为 D3 格式
+                    if (jsonData.length > 0) {
+                        const columns = Object.keys(jsonData[0]);
+                        const d3Data = jsonData;
+                        d3Data.columns = columns;
+                        processLoadedData(d3Data);
+                    } else {
+                        showError('文件为空或格式不正确');
+                    }
+                } catch (error) {
+                    showError('加载 Excel 文件失败: ' + error.message);
+                }
+            };
+            reader.readAsArrayBuffer(file);
+        } else {
+            showError('不支持的文件格式，请上传 CSV 或 Excel 文件');
+        }
     });
+    
+    function processLoadedData(loadedData) {
+        data = loadedData;
+        columns = data.columns || Object.keys(data[0]);
+        
+        console.log('数据加载成功:', data.length, '条记录');
+        console.log('可用列:', columns);
+        
+        populateVariablesList(columns);
+        
+        // Enable options and draw button
+        $('#plotOptions, #draw').prop('disabled', false);
+        
+        // Trigger the change event to set the initial state
+        $('#plotOptions').trigger('change');
+        
+        showSuccess('数据加载成功！共 ' + data.length + ' 条记录，' + columns.length + ' 个变量');
+    }
+    
+    function showLoading(message) {
+        $('#content').html(`
+            <div style="text-align: center; padding: 50px; color: #666;">
+                <div class="loading"></div>
+                <p style="font-size: 18px; font-family: 'retro1', sans-serif;">${message}</p>
+            </div>
+        `);
+    }
+    
+    function showSuccess(message) {
+        $('#content').prepend(`
+            <div class="alert alert-success">
+                <i class="fa fa-check-circle"></i> ${message}
+                <button type="button" class="close" style="float: right; background: none; border: none; font-size: 20px;" onclick="$(this).parent().remove()">&times;</button>
+            </div>
+        `);
+    }
+    
+    function showError(message) {
+        $('#content').html(`
+            <div class="alert alert-error">
+                <i class="fa fa-exclamation-triangle"></i> ${message}
+            </div>
+            <div style="text-align: center; padding: 30px; color: #666;">
+                <i class="fa fa-info-circle" style="font-size: 48px; margin-bottom: 20px;"></i>
+                <p style="font-size: 18px; font-family: 'retro1', sans-serif;">
+                    请上传数据文件并配置变量，然后点击“开始绘图”按钮
+                </p>
+            </div>
+        `);
+    }
 
     function populateVariablesList(columns) {
         if (!columns) {
@@ -402,7 +483,35 @@ function drawTreatmentMatrix(numericVar, categoricalVar, treatmentVar, data) {
     .on("mouseleave", mouseleave)
 }
 
-
-    
-
 });
+
+// 重置所有变量和设置
+function resetAll() {
+    // 清空所有变量列表
+    $('#variables, #dv, #iv, #ind, #missing').empty().append('<li class="placeholder"></li>');
+    
+    // 重置文件输入
+    $('#dataFile').val('');
+    
+    // 重置选项
+    $('#plotOptions').val('missing');
+    
+    // 清空结果区域
+    $('#content').html(`
+        <div style="text-align: center; padding: 50px; color: #666;">
+            <i class="fa fa-info-circle" style="font-size: 48px; margin-bottom: 20px;"></i>
+            <p style="font-size: 18px; font-family: 'retro1', sans-serif;">
+                请上传数据文件并配置变量，然后点击“开始绘图”按钮
+            </p>
+            <p style="color: #999; font-size: 14px;">
+                PanelView 支持缺失数据模式分析和因果推断可视化
+            </p>
+        </div>
+    `);
+    
+    // 重置全局变量
+    data = null;
+    columns = null;
+    
+    console.log('所有设置已重置');
+}

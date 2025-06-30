@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>CPED Visualization</title>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="author" content="Li Liao">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="shortcut icon" href="../favicon.ico" type="image/x-icon">
+    <link rel="icon" href="../favicon.ico" type="image/x-icon">
+    <link rel="stylesheet" href="../libs/font-awesome/css/font-awesome.min.css">
+    <link rel="stylesheet" href="../assets/css/styles.css">
+    <link rel="stylesheet" href="../assets/css/effects.css">
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+    <style>
+        body {
+            font-family: 'retro1', sans-serif;
+            cursor: URL("../assets/img/cursor/cursor.png"), auto !important;
+        }
+        
+        .container-fluid {
+            padding: 20px;
+            background: #f5f5f5;
+            min-height: 100vh;
+        }
+        
+        .card {
+            margin-bottom: 20px;
+            border-radius: 0;
+            border: 2px solid #333;
+            box-shadow: 4px 4px 0px #333;
+            background: #fff;
+        }
+        
+        .card-header {
+            background: #333 !important;
+            color: #fff !important;
+            border-bottom: 2px solid #333;
+            font-family: 'retro', sans-serif;
+            font-weight: bold;
+        }
+        
+        .btn {
+            border-radius: 0;
+            border: 2px solid #333;
+            font-family: 'retro1', sans-serif;
+            font-weight: bold;
+            text-transform: uppercase;
+            box-shadow: 2px 2px 0px #333;
+            transition: all 0.2s;
+        }
+        
+        .btn:hover {
+            transform: translate(1px, 1px);
+            box-shadow: 1px 1px 0px #333;
+        }
+        
+        .btn-primary {
+            background: #3498db;
+            border-color: #333;
+            color: #fff;
+        }
+        
+        .form-control {
+            border-radius: 0;
+            border: 2px solid #333;
+            font-family: 'retro1', sans-serif;
+        }
+        
+        .form-control:focus {
+            border-color: #3498db;
+            box-shadow: none;
+        }
+        
+        #visualizationArea {
+            min-height: 500px;
+            border: 2px solid #333;
+            border-radius: 0;
+            padding: 20px;
+            margin-top: 20px;
+            background: #fff;
+            box-shadow: 4px 4px 0px #333;
+        }
+        
+        h1, h2, h3, h4, h5, h6 {
+            font-family: 'retro', sans-serif;
+        }
+        
+        /* Pixel art styling for tooltips */
+        .tooltip {
+            font-family: 'retro1', sans-serif !important;
+            border-radius: 0 !important;
+            border: 2px solid #333 !important;
+            box-shadow: 2px 2px 0px #333 !important;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation Header -->
+    <nav style="background: #333; padding: 15px 0; border-bottom: 3px solid #fff;">
+        <div class="container">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <h2 style="color: #fff; margin: 0; font-family: 'retro', sans-serif;">
+                    <i class="fa fa-users"></i> CPED官员轨迹分析系统
+                </h2>
+                <div>
+                    <a href="../index.html" class="btn btn-primary" style="margin-right: 10px;">
+                        <i class="fa fa-home"></i> 返回首页
+                    </a>
+                    <a href="CPEDindex.html" class="btn btn-primary">
+                        <i class="fa fa-upload"></i> 数据上传
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-lg-4">
+                <div class="card">
+                    <div class="card-header">
+                        可视化选项
+                    </div>
+                    <div class="card-body">
+                        <form>
+                            <div class="form-group">
+                                <label for="visualType">可视化类型</label>
+                                <select class="form-control" id="visualType">
+                                    <option value="rank">官员职级</option>
+                                    <option value="geography">地理变化</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="officialName">官员姓名</label>
+                                <div class="input-group">
+                                    <input type="text" class="form-control" id="officialName" placeholder="输入官员姓名">
+                                    <div class="input-group-append">
+                                        <button class="btn btn-primary" type="button" id="drawButton">开始绘图</button>
+                                    </div>
+                                </div>
+                                <small class="form-text text-muted">
+                                    提示：如果找不到结果，请先点击下方"数据预览"查看可用的官员姓名
+                                </small>
+                            </div>
+                            <div class="form-group">
+                                <button class="btn btn-info btn-sm" type="button" id="previewDataButton">
+                                    <i class="fa fa-eye"></i> 数据预览
+                                </button>
+                                <button class="btn btn-warning btn-sm" type="button" id="clearDataButton" style="margin-left: 10px;">
+                                    <i class="fa fa-refresh"></i> 重新加载数据
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-8">
+                <div class="card">
+                    <div class="card-header">
+                        <i class="fa fa-chart-line"></i> 可视化结果
+                    </div>
+                    <div class="card-body">
+                        <div id="visualizationArea">
+                            <div style="text-align: center; padding: 50px; color: #666;">
+                                <i class="fa fa-info-circle" style="font-size: 48px; margin-bottom: 20px;"></i>
+                                <p style="font-size: 18px; font-family: 'retro1', sans-serif;">请在左侧输入官员姓名并选择可视化类型开始分析</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="../assets/js/cpedvis_draw.js"></script>
+</body>
+</html>
