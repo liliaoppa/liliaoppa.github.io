@@ -661,12 +661,28 @@ $(document).ready(function() {
                     .duration(200)
                     .style('opacity', 1);
                 
+                // 构建完整地理信息
+                let fullLocation = '';
+                if (d.originalData.province || d.originalData.city || d.originalData.district) {
+                    const locationParts = [d.originalData.province, d.originalData.city, d.originalData.district].filter(l => l);
+                    fullLocation = locationParts.join('');
+                } else {
+                    fullLocation = d.originalData.location;
+                }
+                
                 tooltip.html(`
-                    <strong>📋 经历 ${d.originalData.experienceIndex}</strong><br/>
-                    <strong>职位:</strong> ${d.originalData.position}<br/>
-                    <strong>级别:</strong> ${d.rank}<br/>
-                    <strong>地点:</strong> ${d.originalData.location}<br/>
-                    <strong>时间:</strong> ${d.originalData.dateStr}
+                    <div style="font-weight: bold; margin-bottom: 8px; color: #fbbf24; font-size: 14px;">
+                        ${d.originalData.dateStr}
+                    </div>
+                    <div style="font-weight: bold; margin-bottom: 6px; color: #ffffff; font-size: 13px;">
+                        ${d.originalData.position}
+                    </div>
+                    <div style="margin-bottom: 4px; color: #a78bfa; font-size: 12px;">
+                        <strong>级别:</strong> ${d.rank}
+                    </div>
+                    <div style="color: #cbd5e1; font-size: 12px;">
+                        📍 ${fullLocation}
+                    </div>
                 `)
                     .style('left', (event.pageX + 15) + 'px')
                     .style('top', (event.pageY - 10) + 'px');
@@ -879,12 +895,28 @@ $(document).ready(function() {
                         .duration(200)
                         .style('opacity', 1);
                     
+                    // 构建完整地理信息
+                    let fullLocation = '';
+                    if (d.province || d.city || d.district) {
+                        const locationParts = [d.province, d.city, d.district].filter(l => l);
+                        fullLocation = locationParts.join('');
+                    } else {
+                        fullLocation = d.location;
+                    }
+                    
                     tooltip.html(`
-                        <strong>经历 ${d.experienceIndex}</strong><br/>
-                        职位: ${d.position}<br/>
-                        级别: ${d.rank}<br/>
-                        地点: ${d.location}<br/>
-                        时间: ${d.dateStr}
+                        <div style="font-weight: bold; margin-bottom: 8px; color: #fbbf24; font-size: 14px;">
+                            ${d.dateStr}
+                        </div>
+                        <div style="font-weight: bold; margin-bottom: 6px; color: #ffffff; font-size: 13px;">
+                            ${d.position}
+                        </div>
+                        <div style="margin-bottom: 4px; color: #a78bfa; font-size: 12px;">
+                            <strong>级别:</strong> ${d.rank}
+                        </div>
+                        <div style="color: #cbd5e1; font-size: 12px;">
+                            📍 ${fullLocation}
+                        </div>
                     `)
                         .style('left', (event.pageX + 10) + 'px')
                         .style('top', (event.pageY - 28) + 'px');
@@ -1232,11 +1264,25 @@ $(document).ready(function() {
                         .duration(200)
                         .style('opacity', 1);
                     
+                    // 构建完整地理信息
+                    let fullLocation = '';
+                    if (d.originalProvince || d.originalCity || d.district) {
+                        const locationParts = [d.originalProvince, d.originalCity, d.district].filter(l => l);
+                        fullLocation = locationParts.join('');
+                    } else {
+                        fullLocation = d.location;
+                    }
+                    
                     tooltip.html(`
-                        <div style="font-weight: bold; margin-bottom: 4px;">📍 ${d.location}</div>
-                        <div><strong>职位:</strong> ${d.position}</div>
-                        <div><strong>时间:</strong> ${d.dateStr}</div>
-                        <div><strong>经历:</strong> 第${d.experienceIndex}个</div>
+                        <div style="font-weight: bold; margin-bottom: 8px; color: #fbbf24; font-size: 14px;">
+                            ${d.dateStr}
+                        </div>
+                        <div style="font-weight: bold; margin-bottom: 6px; color: #ffffff; font-size: 13px;">
+                            ${d.position}
+                        </div>
+                        <div style="color: #cbd5e1; font-size: 12px;">
+                            📍 ${fullLocation}
+                        </div>
                     `)
                         .style('left', (event.pageX + 15) + 'px')
                         .style('top', (event.pageY - 10) + 'px');
@@ -1293,7 +1339,7 @@ $(document).ready(function() {
         records.forEach((record, index) => {
             const experienceIndex = record[fields.experienceIndex] || index + 1;
             const startDate = record[fields.startDate] || record[fields.date];
-            const position = record[fields.position] || record['具体职务'] || record['职务一级关键词'] || '未知职位';
+            const position = record['具体职务'] || record[fields.position] || record['职务一级关键词'] || '未知职位';
             const province = record[fields.province] || '';
             const city = record[fields.city] || '';
             const district = record[fields.district] || '';
@@ -1384,36 +1430,50 @@ $(document).ready(function() {
                 .style('background', index % 2 === 0 ? '#ffffff' : '#f8f9fa')
                 .style('border-radius', '0');
             
-            // Header with experience number and date
-            const header = item.append('div')
-                .style('margin-bottom', '8px');
-                
-            header.append('strong')
-                .style('color', '#2c3e50')
-                .style('font-size', '14px')
-                .style('font-family', 'retro, sans-serif')
-                .text(`经历 ${d.experienceIndex}: ${d.dateStr}`);
+            // 新格式: 时间 - 具体职务 - 省市区信息
+            const mainLine = item.append('div')
+                .style('margin-bottom', '4px')
+                .style('font-size', '15px')
+                .style('line-height', '1.4');
             
-            // Position
-            const positionLine = item.append('div')
-                .style('margin-bottom', '4px');
-                
-            positionLine.append('span')
+            // 时间部分
+            mainLine.append('span')
+                .style('color', '#2563eb')
                 .style('font-weight', 'bold')
-                .style('color', '#e74c3c')
+                .style('font-family', 'retro, sans-serif')
+                .text(d.dateStr);
+            
+            // 分隔符
+            mainLine.append('span')
+                .style('color', '#64748b')
+                .style('margin', '0 8px')
+                .text(' - ');
+            
+            // 具体职务部分
+            mainLine.append('span')
+                .style('color', '#dc2626')
+                .style('font-weight', 'bold')
                 .text(d.position);
             
-            // Location details
-            const locationLine = item.append('div')
-                .style('color', '#7f8c8d')
-                .style('font-size', '13px');
-                
+            // 分隔符
+            mainLine.append('span')
+                .style('color', '#64748b')
+                .style('margin', '0 8px')
+                .text(' - ');
+            
+            // 地理信息部分
+            let locationText = '';
             if (d.province || d.city || d.district) {
                 const locationParts = [d.province, d.city, d.district].filter(p => p);
-                locationLine.html(`📍 ${locationParts.join(' → ')}`);
+                locationText = locationParts.join('');
             } else {
-                locationLine.html(`📍 ${d.location}`);
+                locationText = d.location;
             }
+            
+            mainLine.append('span')
+                .style('color', '#059669')
+                .style('font-weight', '500')
+                .html(`📍 ${locationText}`);
         });
         
         console.log('✅ Location list created with', locationData.length, 'items');
@@ -1434,12 +1494,8 @@ $(document).ready(function() {
             const startDate = record[fields.startDate] || record[fields.date];
             const endDate = record[fields.endDate];
             
-            // Get position information - try multiple fields
-            let position = record[fields.position] || '';
-            if (!position || typeof position !== 'string' || position.trim() === '') {
-                // Try alternative position fields
-                position = record['具体职务'] || record['职务一级关键词'] || record['职务二级关键词'] || '未知职位';
-            }
+            // Get position information - prioritize "具体职务"
+            let position = record['具体职务'] || record[fields.position] || record['职务一级关键词'] || record['职务二级关键词'] || '未知职位';
             
             // Get rank information - try multiple fields
             let level = record[fields.rank] || '';
@@ -1510,7 +1566,7 @@ $(document).ready(function() {
             // Use smart field identification
             const experienceIndex = record[fields.experienceIndex] || index + 1;
             const startDate = record[fields.startDate] || record[fields.date];
-            const position = record[fields.position] || '未知职位';
+            const position = record['具体职务'] || record[fields.position] || record['职务一级关键词'] || '未知职位';
             const province = record[fields.province] || '';
             const city = record[fields.city] || '';
             const district = record[fields.district] || '';
@@ -1680,7 +1736,7 @@ $(document).ready(function() {
         
         // Extract data using smart field identification
         const positions = [...new Set(records.map(r => {
-            const pos = r[fields.position] || '未知职位';
+            const pos = r['具体职务'] || r[fields.position] || r['职务一级关键词'] || '未知职位';
             return pos.toString().trim();
         }).filter(p => p && p !== '未知职位'))];
         
@@ -1825,37 +1881,55 @@ $(document).ready(function() {
                 .style('background', index % 2 === 0 ? '#ffffff' : '#f8f9fa')
                 .style('border-radius', '0');
             
-            const date = record[fields.startDate] || record[fields.date] || `记录${index + 1}`;
-            const endDate = record[fields.endDate] || '';
-            const position = record[fields.position] || '未知职位';
+            // 处理时间数据
+            const startDateRaw = record[fields.startDate] || record[fields.date];
+            const endDateRaw = record[fields.endDate] || '';
+            
+            // 使用parseDate函数格式化时间
+            const startDate = parseDate(startDateRaw);
+            const endDate = parseDate(endDateRaw);
+            
+            const startDateStr = startDate ? startDate.toISOString().split('T')[0] : (startDateRaw ? startDateRaw.toString() : `记录${index + 1}`);
+            const endDateStr = endDate ? endDate.toISOString().split('T')[0] : (endDateRaw ? endDateRaw.toString() : '');
+            
+            const position = record['具体职务'] || record[fields.position] || record['职务一级关键词'] || '未知职位';
             const location = record[fields.location] || 
                            [record[fields.province], record[fields.city], record[fields.district]].filter(l => l).join('') || 
                            '未知地点';
             const rank = record[fields.rank] || extractRankFromPosition(position) || '';
             const experienceIndex = record[fields.experienceIndex] || (index + 1);
             
-            // Header with date and sequence
-            const header = item.append('div')
-                .style('margin-bottom', '8px');
-                
-            header.append('strong')
-                .style('color', '#2c3e50')
-                .style('font-size', '14px')
-                .text(`经历${experienceIndex}: ${date}${endDate ? ` - ${endDate}` : ''}`);
+            // 新格式: 时间 - 具体职务 - 省市区信息
+            const mainLine = item.append('div')
+                .style('margin-bottom', '4px')
+                .style('font-size', '15px')
+                .style('line-height', '1.4');
             
-            // Position and rank
-            const positionLine = item.append('div')
-                .style('margin-bottom', '4px');
-                
-            positionLine.append('span')
+            // 时间部分 - 使用格式化后的日期
+            const dateRange = `${startDateStr}${endDateStr ? ` - ${endDateStr}` : ''}`;
+            mainLine.append('span')
+                .style('color', '#2563eb')
                 .style('font-weight', 'bold')
-                .style('color', '#e74c3c')
+                .style('font-family', 'retro, sans-serif')
+                .text(dateRange);
+            
+            // 分隔符
+            mainLine.append('span')
+                .style('color', '#64748b')
+                .style('margin', '0 8px')
+                .text(' - ');
+            
+            // 具体职务部分
+            mainLine.append('span')
+                .style('color', '#dc2626')
+                .style('font-weight', 'bold')
                 .text(position);
-                
+            
+            // 级别标签
             if (rank) {
-                positionLine.append('span')
+                mainLine.append('span')
                     .style('margin-left', '10px')
-                    .style('background', '#3498db')
+                    .style('background', '#a78bfa')
                     .style('color', 'white')
                     .style('padding', '2px 6px')
                     .style('font-size', '12px')
@@ -1863,11 +1937,25 @@ $(document).ready(function() {
                     .text(rank);
             }
             
-            // Location
-            item.append('div')
-                .style('color', '#7f8c8d')
-                .style('font-size', '13px')
-                .html(`📍 ${location}`);
+            // 分隔符
+            mainLine.append('span')
+                .style('color', '#64748b')
+                .style('margin', '0 8px')
+                .text(' - ');
+            
+            // 地理信息部分  
+            let displayLocation = location;
+            if (record[fields.province] || record[fields.city] || record[fields.district]) {
+                const locationParts = [record[fields.province], record[fields.city], record[fields.district]].filter(l => l);
+                if (locationParts.length > 0) {
+                    displayLocation = locationParts.join('');
+                }
+            }
+            
+            mainLine.append('span')
+                .style('color', '#059669')
+                .style('font-weight', '500')
+                .html(`📍 ${displayLocation}`);
         });
         
         // Add data quality summary
