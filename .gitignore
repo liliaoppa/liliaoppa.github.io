@@ -1,0 +1,21 @@
+# macOS metadata
+.DS_Store
+
+# Dependency directories
+node_modules/
+
+# Build outputs
+dist/
+build/
+out/
+
+# Temporary files
+*.log
+*.tmp
+*.swp
+
+# Local test and scratch HTML files
+test_*.html
+
+# Local backup scripts
+assets/js/cpedvis_draw_backup.js
