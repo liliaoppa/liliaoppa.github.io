@@ -8,6 +8,7 @@ node_modules/
 dist/
 build/
 out/
+reference/
 
 # Temporary files
 *.log
@@ -19,6 +20,3 @@ test_*.html
 
 # Local backup scripts
 assets/js/cpedvis_draw_backup.js
-
-# Reference material
-reference/

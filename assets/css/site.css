@@ -426,6 +426,10 @@ p {
   gap: 1rem;
 }
 
+.about-secondary .hero-actions {
+  margin-top: auto;
+}
+
 .btn {
   display: inline-flex;
   align-items: center;
@@ -487,6 +491,7 @@ p {
 
 .about-card.about-secondary {
   background: rgba(255, 248, 235, 0.95);
+  align-items: stretch;
 }
 
 .about-header {
@@ -531,6 +536,8 @@ p {
   border-radius: var(--radius-md);
   padding: 1.2rem 1.4rem;
   color: var(--text-secondary);
+  display: grid;
+  gap: 0.5rem;
 }
 
 .about-label {
@@ -540,6 +547,14 @@ p {
   text-transform: uppercase;
   color: var(--accent);
   font-family: "Press Start 2P", "Inter", sans-serif;
+}
+
+.progress-label--blue {
+  margin: 0;
+  width: 100%;
+  color: #3454d1;
+  text-align: left;
+  align-self: flex-start;
 }
 
 .tag {
@@ -605,10 +620,32 @@ p {
 .hero-progress {
   display: flex;
   flex-direction: column;
-  gap: 0.4rem;
-  width: min(360px, 100%);
+  gap: 0.6rem;
+  width: 100%;
   position: relative;
   z-index: 1;
+  align-items: center;
+}
+
+.about-secondary .hero-progress {
+  flex: 1;
+  justify-content: center;
+}
+
+.progress-scene {
+  width: min(720px, 100%);
+  border: 2px solid var(--border-dark);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  background: var(--bg-alt);
+  box-shadow: var(--shadow-soft);
+  margin: 0 auto;
+}
+
+.progress-scene svg {
+  display: block;
+  width: 100%;
+  height: auto;
 }
 
 .progress-meta {
