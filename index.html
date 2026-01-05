@@ -1,199 +1,386 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <meta charset="utf-8">
-    <title>LIAO Li</title>
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="author" content="Li Liao">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
-    <link rel="icon" href="favicon.ico" type="image/x-icon">
-    <link rel="stylesheet" href="libs/font-awesome/css/font-awesome.min.css">
-    <link rel="stylesheet" href="assets/css/styles.css">
-    <link rel="stylesheet" href="assets/css/effects.css">
-    <link rel="stylesheet" href="assets/css/retro.css">
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Li Liao · Comparative Politics</title>
+    <meta
+      name="description"
+      content="Li Liao researches authoritarian politics, information governance, and computational methods at The University of Hong Kong."
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Press+Start+2P&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="reference/styles.css" />
   </head>
   <body>
-    <header id="top" class="hero">
-      <div class="hero-overlay">
-        <div class="hero-text" id="fadein">
-          <h1>LIAO Li</h1>
-          <h2>Ph.D</h2>
-          <p>Department of Politics &amp; Public Administration, The University of Hong Kong</p>
-          <a href="https://www.dropbox.com/scl/fi/omtdt12c3mzuz076pk34r/CV_liliao2024.pdf?rlkey=b9umstgc6ln2ku905y5liblho&dl=0" class="btn">See My CV</a>
+    <header class="site-header" id="top">
+      <section class="legacy-hero">
+        <div class="legacy-hero-overlay">
+          <div class="nav-bar">
+            <a class="brand" href="#top">Li Liao</a>
+            <nav class="site-nav" aria-label="Primary">
+              <a href="#about">About</a>
+              <a href="#education">Education</a>
+              <a href="#publications">Research</a>
+              <a href="#projects">Projects</a>
+              <a href="#contact">Contact</a>
+            </nav>
+          </div>
+          <div class="legacy-hero-text" aria-labelledby="legacy-hero-title">
+            <h1 id="legacy-hero-title">LIAO LI</h1>
+            <h2>Ph.D</h2>
+            <p>Department of Politics & Public Administration, The University of Hong Kong</p>
+            <a
+              class="legacy-btn js-reveal-btn"
+              href="https://www.dropbox.com/scl/fi/omtdt12c3mzuz076pk34r/CV_liliao2024.pdf?rlkey=b9umstgc6ln2ku905y5liblho&dl=0"
+              target="_blank"
+              rel="noopener"
+              data-label="See My CV"
+              aria-label="See My CV"
+            >
+              <span class="btn-text" aria-hidden="true"></span>
+            </a>
+          </div>
+          <a class="legacy-hero-scroll" href="#about" aria-label="Scroll to About">
+            <span class="legacy-hero-arrow" aria-hidden="true">↓</span>
+          </a>
         </div>
-        <a class="hero-scroll floating-arrow" href="#about" aria-label="Scroll to About section">
-          <i class="fa fa-chevron-down" aria-hidden="true"></i>
-        </a>
-      </div>
+      </section>
     </header>
 
     <main>
-      <section id="about" class="section">
-        <div class="section-inner about-layout">
-          <div class="about-media">
-            <img src="assets/img/out.PNG" alt="Portrait of LIAO Li" class="profile-image">
-          </div>
-          <div class="about-copy">
-            <h2 class="heading">About Me</h2>
-            <p>I study comparative politics, with a focus on authoritarian regimes. My research interests can be broadly categorized into three areas: (1) political survival in authoritarian regimes, (2) information politics, and (3) computational methods for policy texts.</p>
-            <p>In my thesis project, I draw empirical insights from the legal system in both modern and ancient China and model how authoritarian leaders manage bureaucratic discretion. I also collaborate on developing new methods to analyze the structure and content of policy texts.</p>
-            <p>I write random stuff on <a href="https://www.notion.so/SSCI-160708cae92b8005a1a3dfa37b0718d0">Notion</a>.</p>
-          </div>
+      <section class="section alt" id="about">
+        <div class="section-header">
+          <h2>About me</h2>
+        </div>
+        <div class="about-grid">
+          <article class="about-card about-primary">
+            <div class="about-header">
+              <img class="hero-avatar" src="https://liliaoppa.github.io/assets/img/out.PNG" alt="Portrait of Li Liao" />
+              <div class="about-title">
+                <span class="hero-kicker">Comparative politics · Computational social science</span>
+                <h3 class="about-name">Li Liao</h3>
+                <p class="about-role">PhD, University of Hong Kong</p>
+              </div>
+            </div>
+            <p class="about-lede">
+              I study comparative politics, with a focus on authoritarian regimes. 
+              My research interests can be broadly categorized into three areas: 
+              (1) policy process, (2) information politics, and (3) computational methods for policy texts.
+            </p>
+            <div class="hero-tags">
+              <span class="tag">Authoritarian politics</span>
+              <span class="tag">Information governance</span>
+              <span class="tag">Policy text analysis</span>
+            </div>
+          </article>
+          <article class="about-card about-secondary">
+            <div class="about-current">
+              <p class="about-label">Current work</p>
+              <p>
+                Currently, I'm writing a book about detective story and text analysis in the big data era. 
+              </p>
+            </div>
+            <div class="hero-progress" style="--progress: 10%">
+              <div class="progress-meta">
+                <span class="progress-label">Writing progress</span>
+                <span class="progress-value">10%</span>
+              </div>
+              <div class="progress-bar" role="presentation" aria-hidden="true">
+                <div class="progress-fill"></div>
+              </div>
+            </div>
+            <div class="hero-actions">
+              <a class="btn primary" href="mailto:liliao_ppa@connect.hku.hk">Email me</a>
+              <a
+                class="btn secondary"
+                href="https://www.notion.so/SSCI-160708cae92b8005a1a3dfa37b0718d0"
+                target="_blank"
+                rel="noopener"
+              >
+                Random thoughts blog
+              </a>
+            </div>
+          </article>
         </div>
       </section>
 
-      <section id="education" class="section background-alt">
-        <div class="section-inner">
-          <h2 class="heading">Educational Background</h2>
-          <div class="timeline">
-            <article class="timeline-item shadow">
-              <span class="timeline-date">September 2014 – July 2018</span>
-              <div class="timeline-content">
-                <h3>University of Electronic Science and Technology of China</h3>
-                <p>BA in Public Administration</p>
-              </div>
-            </article>
-            <article class="timeline-item shadow">
-              <span class="timeline-date">August 2018 – April 2020</span>
-              <div class="timeline-content">
-                <h3>The Ohio State University</h3>
-                <p>MPA</p>
-              </div>
-            </article>
-            <article class="timeline-item shadow">
-              <span class="timeline-date">August 2020 – April 2025</span>
-              <div class="timeline-content">
-                <h3>The University of Hong Kong</h3>
-                <p>Ph.D in Politics and Public Administration</p>
-              </div>
-            </article>
-          </div>
+      <section class="section" id="education">
+        <div class="section-header">
+          <h2>Education</h2>
+        </div>
+        <div class="timeline">
+          <article class="timeline-item">
+            <span class="timeline-date">2020 – 2025 (exp.)</span>
+            <h3>The University of Hong Kong</h3>
+            <p>Ph.D. in Politics & Public Administration</p>
+          </article>
+          <article class="timeline-item">
+            <span class="timeline-date">2018 – 2020</span>
+            <h3>The Ohio State University</h3>
+            <p>Master of Public Administration</p>
+          </article>
+          <article class="timeline-item">
+            <span class="timeline-date">2014 – 2018</span>
+            <h3>University of Electronic Science and Technology of China</h3>
+            <p>B.A. in Public Administration</p>
+          </article>
         </div>
       </section>
 
-      <section id="publications" class="section">
-        <div class="section-inner">
-          <h2 class="heading">Publications</h2>
-          <div class="card-stack">
-            <article class="card-item shadow">
-              <h3>
-                <a href="https://www.emerald.com/insight/content/doi/10.1108/TC-08-2019-0008/full/html">
-                  Social and programmatic interactions in a therapeutic community for women: an exponential random graph model analysis
-                </a>
-              </h3>
-              <p>With <a href="https://pepperinstitute.fsu.edu/directory/qiuchang-katy-cao-phd">Qiuchang Cao</a> and <a href="https://csw.osu.edu/about/faculty-staff/faculty-directory/warren-keith-ph-d/">Keith Warren</a></p>
-            </article>
-            <article class="card-item shadow">
-              <h3>
-                <a href="https://mp.weixin.qq.com/s/xIdJIfBmsMa0Izr8Uc93Fw">
-                  Experimentation and Demonstration: Central-Local Discourse Coalitions in the Construction of National Independent Innovation Demonstration Zone (In Chinese)
-                </a>
-              </h3>
-              <p>With Luhao Wang and Wanfei Pang</p>
-            </article>
-            <article class="card-item shadow">
-              <h3>
-                <a href="https://www.cambridge.org/core/journals/journal-of-public-policy/article/multilevel-policy-textual-learning-in-chinese-local-environmental-policies/BDD5F2CEF77960A5A96F4D7AFF8C37B1">
-                  Multi-level Textual Learning in the Local Environmental Policies
-                </a>
-              </h3>
-              <p>With <a href="https://cosspp.fsu.edu/askew/faculty/hongtao-yi/">Hongtao Yi</a> and <a href="https://sog.sysu.edu.cn/en/teacher/2721">Wenna Chen</a></p>
-            </article>
-            <article class="card-item shadow">
-              <h3>Dynamic Evolution of Networks: Evidence from China’s Collaborative Environmental Governance</h3>
-              <p>With <a href="https://schpa.uibe.edu.cn/szdw/xxjs/ggjjx/b4b66b09df7546debd9b920384ae6325.htm">Weixing Liu</a> and <a href="https://cosspp.fsu.edu/askew/faculty/hongtao-yi/">Hongtao Yi</a></p>
-            </article>
-          </div>
+      <section class="section alt" id="publications">
+        <div class="section-header">
+          <h2>Selected Work</h2>
         </div>
-      </section>
-
-      <section id="projects" class="section background-alt">
-        <div class="section-inner">
-          <h2 class="heading">Working Projects</h2>
-          <div class="project-grid">
-            <article class="project shadow-large project-with-media">
-              <div class="project-image">
-                <img src="assets/img/ruiling.jpeg" alt="Archival documents spread on a table">
-              </div>
-              <div class="project-info">
+        <div class="work-categories">
+          <details class="work-group">
+            <summary class="work-summary">
+              <span>Text</span>
+              <span class="work-count">3 pieces</span>
+            </summary>
+            <ul class="work-list">
+              <li class="work-item">
+                <h3>
+                  <a href="https://mp.weixin.qq.com/s/xIdJIfBmsMa0Izr8Uc93Fw" target="_blank" rel="noopener">
+                    Experimentation and Demonstration: Central-Local Discourse Coalitions
+                  </a>
+                </h3>
+                <p class="card-meta">with Luhao Wang & Wanfei Pang</p>
+              </li>
+              <li class="work-item">
+                <h3>
+                  <a
+                    href="https://www.cambridge.org/core/journals/journal-of-public-policy/article/multilevel-policy-textual-learning-in-chinese-local-environmental-policies/BDD5F2CEF77960A5A96F4D7AFF8C37B1"
+                    target="_blank"
+                    rel="noopener"
+                  >
+                    Multilevel policy textual learning in Chinese environmental governance
+                  </a>
+                </h3>
+                <p class="card-meta">with Wenna Chen & Hongtao Yi</p>
+              </li>
+              <li class="work-item">
+                <h3>The "Trap of Metaphor"</h3>
+                <p class="card-meta">with Hongtao Yi and Naikang Feng</p>
+              </li>
+            </ul>
+          </details>
+          <details class="work-group">
+            <summary class="work-summary">
+              <span>Network</span>
+              <span class="work-count">1 piece</span>
+            </summary>
+            <ul class="work-list">
+              <li class="work-item">
+                <h3>
+                  <a
+                    href="https://www.tandfonline.com/doi/abs/10.1080/17516234.2025.2583169"
+                    target="_blank"
+                    rel="noopener"
+                  >
+                    Dynamic evolution of networks: evidence from China’s collaborative environmental governance
+                  </a>
+                </h3>
+                <p class="card-meta">with Weixing Liu & Hongtao Yi</p>
+              </li>
+            </ul>
+          </details>
+          <details class="work-group">
+            <summary class="work-summary">
+              <span>Information</span>
+              <span class="work-count">1 piece</span>
+            </summary>
+            <ul class="work-list">
+              <li class="work-item">
                 <h3>The Autocratic Intervention in Juridical Rulings</h3>
-                <p>With <a href="https://ppaweb.hku.hk/f/kwachan">Kwan Nok Chan</a> and <a href="https://www.law.hku.hk/academic_staff/trevor-t-w-wan/">Trevor Wan</a></p>
-              </div>
-            </article>
-            <article class="project shadow-large project-with-media">
-              <div class="project-image">
-                <img src="assets/img/trap.jpeg" alt="A collage of documents and topic modeling outputs">
-              </div>
-              <div class="project-info">
-                <h3>The &ldquo;Trap of Metaphor&rdquo;: Applications and Boundaries of Topic Models in the Social Sciences</h3>
-                <p>With <a href="https://cosspp.fsu.edu/askew/faculty/hongtao-yi/">Hongtao Yi</a> and Naikang Feng</p>
-              </div>
-            </article>
-          </div>
+                <p class="card-meta">with Kwan Nok Chan & Trevor Wan · in progress</p>
+              </li>
+            </ul>
+          </details>
         </div>
       </section>
 
-      <section id="funprojects" class="section">
-        <div class="section-inner">
-          <h2 class="heading">Fun Projects</h2>
-          <div class="project-grid">
-            <article class="project shadow-large project-with-media">
-              <div class="project-image">
-                <img src="assets/img/panelview.jpeg" alt="Screenshot from the PanelView web app">
-              </div>
-              <div class="project-info">
-                <h3><a href="./funprojects/panelview.html">WebPanelView: A Web-based Tool for Analyzing Panel Data</a></h3>
-                <p>Inspired by <a href="https://yiqingxu.org/packages/panelview/articles/tutorial.html">PanelView</a>, an R package developed by <a href="https://yiqingxu.org/">Yiqing Xu</a>.</p>
-              </div>
-            </article>
-            <article class="project shadow-large project-with-media">
-              <div class="project-image">
-                <img src="assets/img/panelview.jpeg" alt="Preview of the CPED leadership network visualization">
-              </div>
-              <div class="project-info">
-                <h3><a href="./funprojects/CPEDindex.html">CPED Leadership Network Visualization</a></h3>
-                <p>An interactive tool for exploring Chinese political elite trajectories using Jiang Junyan&rsquo;s CPED dataset, with search-driven reports and geographic visualizations.</p>
-              </div>
-            </article>
-          </div>
+      <section class="section" id="projects">
+        <div class="section-header">
+          <h2>Fun Projects</h2>
+          <p class="section-eyebrow">Some fun tools I wrote and I upgraded them with assistance of AI.</p>
+        </div>
+        <div class="projects-grid">
+  
+          <article class="project-card">
+            <div class="project-media">
+              <img src="assets/img/panelview.jpeg" alt="WebPanelView interface" />
+            </div>
+            <div class="project-content">
+              <h3>
+                <a href="./funprojects/panelview.html" target="_blank" rel="noopener">WebPanelView</a>
+              </h3>
+              <p>A browser-based tool for exploring treatment timing and missingness in panel data.</p>
+            </div>
+          </article>
+
+          <article class="project-card">
+            <div class="project-media">
+              <img src="assets/img/panelview.jpeg" alt="CPED leadership network preview" />
+            </div>
+            <div class="project-content">
+              <h3>
+                <a href="./funprojects/CPEDindex.html" target="_blank" rel="noopener">CPED Leadership Network</a>
+              </h3>
+              <p>Interactive reports and maps tracing elite trajectories in Jiang Junyan's CPED data.</p>
+            </div>
+          </article>
         </div>
       </section>
 
-      <section id="skills" class="section background-alt">
-        <div class="section-inner">
-          <h2 class="heading">Programming Proficiency</h2>
-          <ul class="skills-list">
-            <li>Python</li>
-            <li>R</li>
-            <li>JavaScript</li>
-            <li>Stata</li>
-            <li>MongoDB</li>
-          </ul>
+
+      <section class="section alt contact-section">
+        <div class="cta-inner">
+          <div class="cta-copy">
+            <p class="section-eyebrow">Open to collaboration</p>
+            <h2>Let us build careful, transparent studies together</h2>
+            <p>
+              I am happy to chat about co-authoring, data strategy on
+              authoritarian politics and computational methods.
+            </p>
+          </div>
+          <div class="cta-meta">
+            <div class="cta-actions">
+              <a class="btn primary" href="mailto:liliao_ppa@connect.hku.hk">Email me</a>
+              <a class="btn secondary" href="https://github.com/liliaoppa" target="_blank" rel="noopener">
+                GitHub
+              </a>
+            </div>
+            <div class="cta-skills">
+              <p class="section-eyebrow">Skills</p>
+              <ul class="skill-list compact">
+                <li>Python</li>
+                <li>R</li>
+                <li>JavaScript</li>
+                <li>Stata</li>
+                <li>MongoDB</li>
+              </ul>
+            </div>
+          </div>
         </div>
       </section>
     </main>
 
-    <footer class="site-footer">
+    <footer class="site-footer" id="contact">
       <div class="footer-inner">
-        <p>Made with <span class="fa fa-heart love" aria-hidden="true"></span> by Krishnakanth Alagiri (KK)</p>
-        <div class="social-links">
-          <a href="https://github.com/liliaoppa" target="_blank" rel="noopener">
-            <img src="assets/img/icons/GitHub.png" alt="GitHub">
-          </a>
-          <a href="https://linkedin.com/" target="_blank" rel="noopener">
-            <img src="assets/img/icons/LinkedIn.png" alt="LinkedIn">
-          </a>
-          <a href="mailto:liliao_ppa@connect.hku.hk">
-            <img src="assets/img/icons/Mail.png" alt="Email">
-          </a>
+        <div>
+          <p class="footer-brand">Li Liao</p>
+          <p>Department of Politics & Public Administration · The University of Hong Kong</p>
         </div>
+        
       </div>
-      <a class="up-arrow floating-arrow" href="#top" aria-label="Back to top">
-        <i class="fa fa-chevron-up" aria-hidden="true"></i>
-      </a>
+      <a class="back-to-top" href="#top">Back to top</a>
     </footer>
+    <script>
+      (() => {
+        const navBar = document.querySelector(".legacy-hero .nav-bar");
+        let hasLeftTop = window.scrollY > 80;
+        const updateNavVisibility = () => {
+          if (!navBar) {
+            return;
+          }
+          if (window.scrollY > 80) {
+            hasLeftTop = true;
+          }
+          const isVisible = hasLeftTop && window.scrollY <= 8;
+          navBar.classList.toggle("is-visible", isVisible);
+        };
 
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+        updateNavVisibility();
+        window.addEventListener("scroll", updateNavVisibility, { passive: true });
+
+        document.querySelectorAll(".js-reveal-btn").forEach((button) => {
+          const label = button.dataset.label || "";
+          const textEl = button.querySelector(".btn-text");
+          if (!label || !textEl) {
+            return;
+          }
+          textEl.textContent = "";
+          let isRevealed = false;
+          button.addEventListener("click", () => {
+            if (isRevealed) {
+              return;
+            }
+            isRevealed = true;
+            button.classList.add("is-revealed");
+            textEl.textContent = label;
+          });
+        });
+
+        const sprites = [
+          { type: "text", value: "⭐" },
+          { type: "text", value: "✦" },
+          { type: "text", value: "◎" },
+          { type: "pokeball" }
+        ];
+
+        const createSprite = (x, y) => {
+          const choice = sprites[Math.floor(Math.random() * sprites.length)];
+          const sprite = document.createElement("span");
+          sprite.classList.add("sprite");
+          if (choice.type === "text") {
+            sprite.textContent = choice.value;
+            sprite.classList.add("sprite-text");
+          } else {
+            sprite.classList.add("sprite-pokeball");
+          }
+          sprite.style.left = `${x}px`;
+          sprite.style.top = `${y}px`;
+          document.body.appendChild(sprite);
+          sprite.addEventListener("animationend", () => sprite.remove());
+        };
+
+        const triggerInSection = (section) => {
+          const rect = section.getBoundingClientRect();
+          const x = rect.left + Math.random() * rect.width;
+          const y = window.scrollY + rect.top + Math.random() * rect.height * 0.9;
+          createSprite(x, y);
+          if (Math.random() > 0.55) {
+            setTimeout(() => createSprite(x + 40, y + 20), 380);
+          }
+        };
+
+        const observer = new IntersectionObserver(
+          (entries) => {
+            entries.forEach((entry) => {
+              if (entry.isIntersecting) {
+                triggerInSection(entry.target);
+              }
+            });
+          },
+          { threshold: 0.35 }
+        );
+
+        document.querySelectorAll("main .section").forEach((section) => {
+          observer.observe(section);
+        });
+
+        let intervalId = null;
+        const startAmbientSprites = () => {
+          intervalId = setInterval(() => {
+            const x = Math.random() * window.innerWidth;
+            const y = window.scrollY + Math.random() * window.innerHeight;
+            createSprite(x, y);
+          }, 6500);
+        };
+
+        startAmbientSprites();
+
+        window.addEventListener("beforeunload", () => {
+          if (intervalId) {
+            clearInterval(intervalId);
+          }
+        });
+      })();
+    </script>
   </body>
 </html>
