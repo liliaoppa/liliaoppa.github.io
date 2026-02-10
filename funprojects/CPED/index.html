@@ -1,0 +1,1055 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CPED 官员生涯追踪系统</title>
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <link rel="stylesheet" href="../../libs/font-awesome/css/font-awesome.min.css">
+    <link rel="stylesheet" href="../../assets/css/styles.css">
+    <link rel="stylesheet" href="../../assets/css/effects.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'retro1', sans-serif;
+            background: #f5f5f5;
+            color: #333;
+            min-height: 100vh;
+            cursor: URL("../../assets/img/cursor/cursor.png"), auto !important;
+        }
+
+        /* 头部导航 */
+        header {
+            background: #333;
+            color: #fff;
+            padding: 15px 0;
+            border-bottom: 3px solid #fff;
+        }
+
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        h1 {
+            font-family: 'retro', sans-serif;
+            font-size: 20px;
+            margin: 0;
+        }
+
+        .btn {
+            border-radius: 0;
+            border: 2px solid #333;
+            font-family: 'retro1', sans-serif;
+            font-weight: bold;
+            text-transform: uppercase;
+            box-shadow: 2px 2px 0px #333;
+            transition: all 0.2s;
+            padding: 8px 16px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn:hover {
+            transform: translate(1px, 1px);
+            box-shadow: 1px 1px 0px #333;
+        }
+
+        .btn-primary {
+            background: #3498db;
+            border-color: #333;
+            color: #fff;
+        }
+
+        .btn-secondary {
+            background: #fff;
+            color: #333;
+        }
+
+        /* 主容器 */
+        .main-container {
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            min-height: calc(100vh - 70px);
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        /* 左侧边栏 */
+        .sidebar {
+            background: #fff;
+            border-right: 3px solid #333;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .panel-title {
+            font-family: 'retro', sans-serif;
+            font-size: 14px;
+            color: #333;
+            margin-bottom: 15px;
+            padding: 10px;
+            background: #f5f5f5;
+            border: 2px solid #333;
+        }
+
+        /* 搜索框 */
+        .search-box {
+            margin-bottom: 20px;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 10px;
+            font-family: 'retro1', sans-serif;
+            font-size: 14px;
+            border: 2px solid #333;
+            border-radius: 0;
+            margin-bottom: 10px;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: #3498db;
+        }
+
+        /* 官员列表 */
+        .officials-list {
+            max-height: 500px;
+            overflow-y: auto;
+            border: 2px solid #333;
+            background: #fff;
+        }
+
+        .official-item {
+            padding: 12px;
+            border-bottom: 1px solid #ddd;
+            cursor: pointer;
+            transition: all 0.1s;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .official-item:hover {
+            background: #3498db;
+            color: #fff;
+        }
+
+        .official-item.active {
+            background: #333;
+            color: #fff;
+        }
+
+        .official-name {
+            font-size: 16px;
+            font-weight: bold;
+        }
+
+        .official-info {
+            font-size: 12px;
+            opacity: 0.7;
+        }
+
+        /* 主内容区 */
+        .content {
+            padding: 20px;
+            overflow-y: auto;
+            background: #f5f5f5;
+        }
+
+        /* 卡片样式 */
+        .card {
+            background: #fff;
+            border: 2px solid #333;
+            box-shadow: 4px 4px 0px #333;
+            margin-bottom: 20px;
+        }
+
+        .card-header {
+            background: #333;
+            color: #fff;
+            padding: 15px;
+            font-family: 'retro', sans-serif;
+            font-size: 14px;
+        }
+
+        .card-body {
+            padding: 20px;
+        }
+
+        /* 官员信息卡片 */
+        .profile-header {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .avatar {
+            width: 100px;
+            height: 100px;
+            background: #3498db;
+            border: 4px solid #333;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'retro', sans-serif;
+            font-size: 36px;
+            color: #fff;
+            box-shadow: 4px 4px 0px #333;
+        }
+
+        .profile-basic {
+            flex: 1;
+        }
+
+        .profile-name {
+            font-family: 'retro', sans-serif;
+            font-size: 24px;
+            color: #333;
+            margin-bottom: 15px;
+        }
+
+        .profile-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+        }
+
+        .stat-box {
+            background: #f5f5f5;
+            border: 2px solid #333;
+            padding: 10px;
+            text-align: center;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 5px;
+        }
+
+        .stat-value {
+            font-size: 18px;
+            font-weight: bold;
+            color: #3498db;
+        }
+
+        /* 级别晋升矩阵图 */
+        .level-matrix-container {
+            overflow-x: auto;
+            padding: 20px;
+            background: #f5f5f5;
+            border: 2px solid #333;
+        }
+
+        .matrix-cell {
+            stroke: #90caf9;
+            stroke-width: 1;
+        }
+
+        .matrix-cell.active {
+            stroke: #333;
+            stroke-width: 2;
+        }
+
+        .matrix-label {
+            font-family: 'retro1', sans-serif;
+            font-size: 12px;
+            fill: #333;
+        }
+
+        .matrix-title {
+            font-family: 'retro', sans-serif;
+            font-size: 14px;
+            fill: #333;
+            text-anchor: middle;
+        }
+
+        /* 地图容器 */
+        .map-container {
+            height: 450px;
+            border: 2px solid #333;
+            background: #fff;
+        }
+
+        /* 时间线 */
+        .timeline {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .timeline-item {
+            flex: 1;
+            min-width: 250px;
+            background: #fff;
+            border: 2px solid #333;
+            padding: 15px;
+            position: relative;
+            box-shadow: 3px 3px 0px #ddd;
+        }
+
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: #3498db;
+        }
+
+        .timeline-date {
+            font-family: 'retro', sans-serif;
+            font-size: 12px;
+            color: #3498db;
+            margin-bottom: 8px;
+        }
+
+        .timeline-position {
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .timeline-location {
+            font-size: 14px;
+            color: #666;
+        }
+
+        .timeline-level-tag {
+            display: inline-block;
+            padding: 4px 8px;
+            background: #333;
+            color: #fff;
+            font-size: 12px;
+            margin-top: 8px;
+        }
+
+        /* 图例 */
+        .legend {
+            display: flex;
+            gap: 20px;
+            padding: 15px;
+            background: #fff;
+            border: 2px solid #333;
+            margin-top: 15px;
+            flex-wrap: wrap;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+        }
+
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            border: 2px solid #333;
+        }
+
+        /* 加载和空状态 */
+        .loading-box {
+            text-align: center;
+            padding: 40px;
+            font-size: 18px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px;
+            color: #666;
+        }
+
+        .empty-state h2 {
+            font-family: 'retro', sans-serif;
+            font-size: 18px;
+            color: #333;
+            margin-bottom: 15px;
+        }
+
+        /* 网格布局 */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        @media (max-width: 1200px) {
+            .main-container {
+                grid-template-columns: 260px 1fr;
+            }
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .main-container {
+                grid-template-columns: 1fr;
+            }
+            .sidebar {
+                border-right: none;
+                border-bottom: 3px solid #333;
+                max-height: 300px;
+            }
+            .profile-header {
+                flex-direction: column;
+                align-items: center;
+            }
+        }
+
+        /* 滚动条样式 */
+        ::-webkit-scrollbar {
+            width: 10px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f5f5f5;
+            border-left: 2px solid #333;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #3498db;
+            border: 2px solid #333;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #2980b9;
+        }
+
+        /* 提示框 */
+        .tooltip {
+            position: absolute;
+            background: #333;
+            color: #fff;
+            padding: 8px 12px;
+            font-size: 12px;
+            border: 2px solid #fff;
+            pointer-events: none;
+            z-index: 1000;
+            font-family: 'retro1', sans-serif;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="header-content">
+            <h1><i class="fa fa-users"></i> CPED 官员生涯追踪系统</h1>
+            <div>
+                <a href="../../index.html" class="btn btn-primary">
+                    <i class="fa fa-home"></i> 返回首页
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <div class="main-container">
+        <!-- 左侧搜索栏 -->
+        <aside class="sidebar">
+            <div class="panel-title"><i class="fa fa-search"></i> 搜索官员</div>
+            <div class="search-box">
+                <input type="text" class="form-control" id="search-input" placeholder="输入姓名或籍贯...">
+                <button class="btn btn-primary" onclick="searchOfficials()" style="width: 48%; margin-right: 4%;">
+                    <i class="fa fa-search"></i> 搜索
+                </button>
+                <button class="btn btn-secondary" onclick="clearSearch()" style="width: 48%;">
+                    <i class="fa fa-refresh"></i> 清空
+                </button>
+            </div>
+
+            <div class="panel-title"><i class="fa fa-list"></i> 官员列表</div>
+            <div class="officials-list" id="officials-list">
+                <div class="loading-box">正在加载数据...</div>
+            </div>
+        </aside>
+
+        <!-- 右侧主内容 -->
+        <main class="content" id="main-content">
+            <div class="empty-state">
+                <h2><i class="fa fa-hand-pointer-o"></i> 请选择一位官员</h2>
+                <p>从左侧列表选择官员查看详细生涯数据</p>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // 全局数据
+        let cpedData = {};
+        let officialsList = [];
+        let currentOfficial = null;
+        let mapChart = null;
+
+        // 级别配置（从低到高）
+        const levelConfig = {
+            '小于副处': { order: 1, color: '#e3f2fd', label: '<副处' },
+            '副处': { order: 2, color: '#bbdefb', label: '副处' },
+            '正处': { order: 3, color: '#90caf9', label: '正处' },
+            '副厅': { order: 4, color: '#64b5f6', label: '副厅' },
+            '正厅': { order: 5, color: '#42a5f5', label: '正厅' },
+            '副部': { order: 6, color: '#2196f3', label: '副部' },
+            '正部': { order: 7, color: '#1e88e5', label: '正部' },
+            '副国': { order: 8, color: '#1976d2', label: '副国' },
+            '正国': { order: 9, color: '#1565c0', label: '正国' }
+        };
+
+        const levels = ['小于副处', '副处', '正处', '副厅', '正厅', '副部', '正部', '副国', '正国'];
+
+        // 初始化
+        async function init() {
+            try {
+                const response = await fetch('data/cped_data.json');
+                cpedData = await response.json();
+                officialsList = cpedData.officials;
+                renderOfficialsList(officialsList.slice(0, 50));
+            } catch (error) {
+                console.error('数据加载失败:', error);
+                document.getElementById('officials-list').innerHTML = `
+                    <div class="loading-box" style="color: #e74c3c;">
+                        <i class="fa fa-exclamation-triangle"></i><br>
+                        数据加载失败<br>
+                        <small>${error.message}</small>
+                    </div>
+                `;
+            }
+        }
+
+        // 渲染官员列表
+        function renderOfficialsList(list) {
+            const container = document.getElementById('officials-list');
+            if (list.length === 0) {
+                container.innerHTML = '<div class="loading-box">未找到匹配结果</div>';
+                return;
+            }
+
+            container.innerHTML = list.map(o => `
+                <div class="official-item" onclick="selectOfficial(${o.id})" data-id="${o.id}">
+                    <div>
+                        <div class="official-name">${o.name}</div>
+                        <div class="official-info">${o.nativePlace?.province || ''} | ${o.education || ''}</div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // 搜索官员
+        function searchOfficials() {
+            const keyword = document.getElementById('search-input').value.trim();
+            if (!keyword) {
+                renderOfficialsList(officialsList.slice(0, 50));
+                return;
+            }
+
+            const filtered = officialsList.filter(o =>
+                o.name.includes(keyword) ||
+                (o.nativePlace?.province && o.nativePlace.province.includes(keyword))
+            );
+            renderOfficialsList(filtered.slice(0, 50));
+        }
+
+        // 清空搜索
+        function clearSearch() {
+            document.getElementById('search-input').value = '';
+            renderOfficialsList(officialsList.slice(0, 50));
+        }
+
+        // 回车搜索
+        document.getElementById('search-input')?.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') searchOfficials();
+        });
+
+        // 选择官员
+        async function selectOfficial(id) {
+            currentOfficial = cpedData.officials.find(o => o.id === id);
+            if (!currentOfficial) return;
+
+            // 更新列表选中状态
+            document.querySelectorAll('.official-item').forEach(item => {
+                item.classList.toggle('active', parseInt(item.dataset.id) === id);
+            });
+
+            // 渲染详情
+            renderOfficialDetail();
+        }
+
+        // 渲染官员详情
+        function renderOfficialDetail() {
+            const careers = cpedData.careers[currentOfficial.id] || [];
+            const timelineData = cpedData.levelTimelines?.[currentOfficial.id] || [];
+            const geoData = cpedData.geoMovements?.[currentOfficial.id] || [];
+
+            const content = document.getElementById('main-content');
+            content.innerHTML = `
+                <!-- 基本信息 -->
+                <div class="card">
+                    <div class="card-header">
+                        <i class="fa fa-user"></i> 基本信息
+                    </div>
+                    <div class="card-body">
+                        <div class="profile-header">
+                            <div class="avatar">${currentOfficial.name[0]}</div>
+                            <div class="profile-basic">
+                                <div class="profile-name">${currentOfficial.name}</div>
+                                <div class="profile-stats">
+                                    <div class="stat-box">
+                                        <div class="stat-label">性别</div>
+                                        <div class="stat-value">${currentOfficial.gender || '?'}</div>
+                                    </div>
+                                    <div class="stat-box">
+                                        <div class="stat-label">民族</div>
+                                        <div class="stat-value">${currentOfficial.ethnicity || '?'}</div>
+                                    </div>
+                                    <div class="stat-box">
+                                        <div class="stat-label">学历</div>
+                                        <div class="stat-value">${currentOfficial.education || '?'}</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: 15px;">
+                            <div class="stat-box">
+                                <div class="stat-label">籍贯</div>
+                                <div class="stat-value" style="font-size: 14px;">
+                                    ${currentOfficial.nativePlace?.province || '-'} ${currentOfficial.nativePlace?.city || ''}
+                                </div>
+                            </div>
+                            <div class="stat-box">
+                                <div class="stat-label">出生日期</div>
+                                <div class="stat-value" style="font-size: 14px;">${currentOfficial.birthDate || '-'}</div>
+                            </div>
+                            <div class="stat-box">
+                                <div class="stat-label">现状</div>
+                                <div class="stat-value" style="font-size: 14px;">${currentOfficial.status || '-'}</div>
+                            </div>
+                            <div class="stat-box">
+                                <div class="stat-label">经历数</div>
+                                <div class="stat-value" style="font-size: 14px;">${careers.length}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="dashboard-grid">
+                    <!-- 级别晋升矩阵图 -->
+                    <div class="card" style="grid-column: span 2;">
+                        <div class="card-header">
+                            <i class="fa fa-sitemap"></i> 级别晋升时间线
+                        </div>
+                        <div class="card-body">
+                            <div id="level-matrix"></div>
+                            <div class="legend">
+                                <div class="legend-item">
+                                    <div class="legend-color" style="background: #e3f2fd;"></div>
+                                    <span>&lt;副处</span>
+                                </div>
+                                <div class="legend-item">
+                                    <div class="legend-color" style="background: #90caf9;"></div>
+                                    <span>处级</span>
+                                </div>
+                                <div class="legend-item">
+                                    <div class="legend-color" style="background: #42a5f5;"></div>
+                                    <span>厅级</span>
+                                </div>
+                                <div class="legend-item">
+                                    <div class="legend-color" style="background: #2196f3;"></div>
+                                    <span>部级</span>
+                                </div>
+                                <div class="legend-item">
+                                    <div class="legend-color" style="background: #1565c0;"></div>
+                                    <span>国级</span>
+                                </div>
+                            </div>
+                            <p style="margin-top: 15px; font-size: 12px; color: #666;">
+                                <i class="fa fa-info-circle"></i>
+                                横轴为年份，纵轴为级别。颜色表示该年份已达到的最高级别（包含该级别及以下）。
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- 地理变迁地图 -->
+                    <div class="card">
+                        <div class="card-header">
+                            <i class="fa fa-map-marker"></i> 地理迁徙
+                        </div>
+                        <div class="card-body" style="padding: 0;">
+                            <div class="map-container" id="geo-map"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 详细履历 -->
+                <div class="card">
+                    <div class="card-header">
+                        <i class="fa fa-history"></i> 详细履历
+                    </div>
+                    <div class="card-body">
+                        <div class="timeline">
+                            ${careers.slice(0, 20).map(c => `
+                                <div class="timeline-item">
+                                    <div class="timeline-date">
+                                        <i class="fa fa-calendar"></i> ${c.startDate || '未知'} ~ ${c.endDate || '至今'}
+                                    </div>
+                                    <div class="timeline-position">${c.specificPosition || c.position1 || '-'}</div>
+                                    <div class="timeline-location">
+                                        <i class="fa fa-map-marker"></i> ${c.province || ''} ${c.city || ''} ${c.county || ''}
+                                    </div>
+                                    ${c.level ? `<span class="timeline-level-tag">${c.level}</span>` : ''}
+                                </div>
+                            `).join('')}
+                        </div>
+                        ${careers.length > 20 ? `<p style="text-align: center; margin-top: 15px; color: #666;">... 还有 ${careers.length - 20} 条记录 ...</p>` : ''}
+                    </div>
+                </div>
+            `;
+
+            // 渲染级别矩阵图
+            drawLevelMatrix(timelineData);
+
+            // 初始化地图
+            initGeoMap(geoData);
+        }
+
+        // 绘制级别晋升矩阵图（使用D3.js，类似v1风格）
+        function drawLevelMatrix(timelineData) {
+            const container = document.getElementById('level-matrix');
+            if (!container) return;
+
+            // 处理数据：按年份获取最高级别
+            const yearMaxLevel = {};
+            timelineData.forEach(item => {
+                const year = item.date ? parseInt(item.date.substring(0, 4)) : null;
+                if (year) {
+                    const levelOrder = levelConfig[item.level]?.order || 0;
+                    if (!yearMaxLevel[year] || levelOrder > yearMaxLevel[year].order) {
+                        yearMaxLevel[year] = { level: item.level, order: levelOrder };
+                    }
+                }
+            });
+
+            const years = Object.keys(yearMaxLevel).map(Number).sort((a, b) => a - b);
+            if (years.length === 0) {
+                container.innerHTML = '<div class="empty-state">无级别数据</div>';
+                return;
+            }
+
+            // 构建完整的年度最高级别记录
+            const minYear = years[0];
+            const maxYear = years[years.length - 1];
+            let currentMaxOrder = 0;
+            const yearLevels = [];
+
+            for (let y = minYear; y <= maxYear; y++) {
+                if (yearMaxLevel[y]) {
+                    currentMaxOrder = Math.max(currentMaxOrder, yearMaxLevel[y].order);
+                }
+                yearLevels.push({
+                    year: y,
+                    maxOrder: currentMaxOrder,
+                    level: levels[currentMaxOrder - 1] || '小于副处'
+                });
+            }
+
+            // D3.js 矩阵图配置
+            const cellSize = 35;
+            const margin = { top: 40, right: 20, bottom: 40, left: 80 };
+            const width = yearLevels.length * cellSize + margin.left + margin.right;
+            const height = levels.length * cellSize + margin.top + margin.bottom;
+
+            // 清空容器
+            container.innerHTML = '';
+
+            // 创建SVG
+            const svg = d3.select('#level-matrix')
+                .append('svg')
+                .attr('width', width)
+                .attr('height', height)
+                .style('font-family', 'retro1, sans-serif');
+
+            // 创建比例尺
+            const xScale = d3.scaleBand()
+                .domain(yearLevels.map(d => d.year))
+                .range([margin.left, width - margin.right])
+                .padding(0.05);
+
+            const yScale = d3.scaleBand()
+                .domain(levels.slice().reverse())
+                .range([margin.top, height - margin.bottom])
+                .padding(0.05);
+
+            // 绘制背景网格
+            const gridData = [];
+            yearLevels.forEach(y => {
+                levels.slice().reverse().forEach((level, idx) => {
+                    gridData.push({
+                        year: y.year,
+                        level: level,
+                        levelOrder: levels.indexOf(level) + 1,
+                        isActive: y.maxOrder >= (levels.indexOf(level) + 1)
+                    });
+                });
+            });
+
+            // 绘制单元格
+            const tooltip = d3.select('body').append('div')
+                .attr('class', 'tooltip')
+                .style('opacity', 0);
+
+            svg.selectAll('.matrix-cell')
+                .data(gridData)
+                .enter()
+                .append('rect')
+                .attr('class', d => `matrix-cell ${d.isActive ? 'active' : ''}`)
+                .attr('x', d => xScale(d.year))
+                .attr('y', d => yScale(d.level))
+                .attr('width', xScale.bandwidth())
+                .attr('height', yScale.bandwidth())
+                .attr('fill', d => d.isActive ? levelConfig[d.level]?.color || '#e3f2fd' : '#ffffff')
+                .attr('stroke', d => d.isActive ? '#333' : '#ddd')
+                .attr('stroke-width', d => d.isActive ? 2 : 1)
+                .on('mouseover', function(event, d) {
+                    d3.select(this)
+                        .attr('stroke', '#333')
+                        .attr('stroke-width', 3);
+
+                    tooltip.transition().duration(200).style('opacity', 1);
+                    tooltip.html(`
+                        <strong>${d.year}年</strong><br>
+                        级别: ${d.level}<br>
+                        状态: ${d.isActive ? '已达成' : '未达成'}
+                    `)
+                        .style('left', (event.pageX + 10) + 'px')
+                        .style('top', (event.pageY - 28) + 'px');
+                })
+                .on('mouseout', function(event, d) {
+                    d3.select(this)
+                        .attr('stroke', d.isActive ? '#333' : '#ddd')
+                        .attr('stroke-width', d.isActive ? 2 : 1);
+
+                    tooltip.transition().duration(500).style('opacity', 0);
+                });
+
+            // X轴（年份）
+            const xAxis = svg.append('g')
+                .attr('transform', `translate(0, ${margin.top - 5})`);
+
+            xAxis.selectAll('.x-label')
+                .data(yearLevels)
+                .enter()
+                .append('text')
+                .attr('class', 'matrix-label')
+                .attr('x', d => xScale(d.year) + xScale.bandwidth() / 2)
+                .attr('y', 0)
+                .attr('text-anchor', 'middle')
+                .text(d => d.year)
+                .style('font-size', '11px');
+
+            // Y轴（级别）
+            const yAxis = svg.append('g')
+                .attr('transform', `translate(${margin.left - 10}, 0)`);
+
+            yAxis.selectAll('.y-label')
+                .data(levels.slice().reverse())
+                .enter()
+                .append('text')
+                .attr('class', 'matrix-label')
+                .attr('x', 0)
+                .attr('y', d => yScale(d) + yScale.bandwidth() / 2)
+                .attr('text-anchor', 'end')
+                .attr('dominant-baseline', 'middle')
+                .text(d => levelConfig[d]?.label || d)
+                .style('font-size', '12px');
+
+            // 标题
+            svg.append('text')
+                .attr('class', 'matrix-title')
+                .attr('x', width / 2)
+                .attr('y', 20)
+                .text(`${currentOfficial.name} - 级别晋升历程`);
+        }
+
+        // 加载中国地图
+        async function loadChinaMap() {
+            try {
+                const response = await fetch('china.json');
+                if (!response.ok) throw new Error('Map not found');
+                const chinaJson = await response.json();
+                echarts.registerMap('china', chinaJson);
+                return true;
+            } catch (error) {
+                console.error('地图加载失败:', error);
+                return false;
+            }
+        }
+
+        // 初始化地理迁徙地图
+        async function initGeoMap(geoData) {
+            const container = document.getElementById('geo-map');
+            if (!container) return;
+
+            if (!geoData || geoData.length === 0) {
+                container.innerHTML = '<div class="empty-state">无地理数据</div>';
+                return;
+            }
+
+            const mapLoaded = await loadChinaMap();
+            if (!mapLoaded) {
+                container.innerHTML = '<div class="empty-state">地图加载失败</div>';
+                return;
+            }
+
+            // 省份坐标映射
+            const provinceCoords = {
+                '北京市': [116.4, 39.9], '上海市': [121.4, 31.2], '天津市': [117.2, 39.1], '重庆市': [106.5, 29.6],
+                '河北省': [114.5, 38.0], '山西省': [112.5, 37.9], '辽宁省': [123.4, 41.8], '吉林省': [125.3, 43.9],
+                '黑龙江省': [126.6, 45.8], '江苏省': [118.8, 32.1], '浙江省': [120.2, 30.3], '安徽省': [117.3, 31.9],
+                '福建省': [119.3, 26.1], '江西省': [115.9, 28.7], '山东省': [117.0, 36.7], '河南省': [113.6, 34.8],
+                '湖北省': [114.3, 30.6], '湖南省': [113.0, 28.2], '广东省': [113.3, 23.1], '海南省': [110.3, 20.0],
+                '四川省': [104.1, 30.7], '贵州省': [106.7, 26.6], '云南省': [102.7, 25.0], '陕西省': [108.9, 34.3],
+                '甘肃省': [103.8, 36.1], '青海省': [101.8, 36.6], '台湾省': [121.5, 25.0], '内蒙古自治区': [111.7, 40.8],
+                '广西壮族自治区': [108.3, 22.8], '西藏自治区': [91.1, 29.7], '宁夏回族自治区': [106.3, 38.5],
+                '新疆维吾尔自治区': [87.6, 43.8], '香港特别行政区': [114.2, 22.3], '澳门特别行政区': [113.5, 22.2],
+                '中央': [116.4, 39.9]
+            };
+
+            // 构建迁徙数据
+            const moveData = [];
+            const points = [];
+
+            for (let i = 0; i < geoData.length - 1; i++) {
+                const from = geoData[i];
+                const to = geoData[i + 1];
+
+                const fromCoord = provinceCoords[from.province];
+                const toCoord = provinceCoords[to.province];
+
+                if (fromCoord && toCoord && from.province !== to.province) {
+                    moveData.push({
+                        fromName: from.province,
+                        toName: to.province,
+                        coords: [fromCoord, toCoord],
+                        value: i + 1
+                    });
+                }
+
+                if (fromCoord) {
+                    points.push({
+                        name: from.province,
+                        value: [...fromCoord, i + 1],
+                        itemStyle: { color: '#3498db' }
+                    });
+                }
+            }
+
+            const last = geoData[geoData.length - 1];
+            const lastCoord = provinceCoords[last.province];
+            if (lastCoord) {
+                points.push({
+                    name: last.province,
+                    value: [...lastCoord, geoData.length],
+                    itemStyle: { color: '#2980b9' }
+                });
+            }
+
+            mapChart = echarts.init(container);
+
+            mapChart.setOption({
+                backgroundColor: '#f5f5f5',
+                title: {
+                    text: `${currentOfficial.name} - 工作地迁徙`,
+                    left: 'center',
+                    top: 10,
+                    textStyle: {
+                        fontFamily: 'retro1',
+                        fontSize: 14,
+                        color: '#333'
+                    }
+                },
+                geo: {
+                    map: 'china',
+                    roam: true,
+                    zoom: 1.2,
+                    label: {
+                        show: true,
+                        fontFamily: 'retro1',
+                        fontSize: 10,
+                        color: '#333'
+                    },
+                    itemStyle: {
+                        areaColor: '#fff',
+                        borderColor: '#333',
+                        borderWidth: 1
+                    },
+                    emphasis: {
+                        itemStyle: {
+                            areaColor: '#bbdefb'
+                        }
+                    }
+                },
+                series: [
+                    {
+                        name: '迁徙',
+                        type: 'lines',
+                        zlevel: 1,
+                        effect: {
+                            show: true,
+                            period: 6,
+                            trailLength: 0.7,
+                            color: '#3498db',
+                            symbolSize: 3
+                        },
+                        lineStyle: {
+                            color: '#3498db',
+                            width: 2,
+                            curveness: 0.2
+                        },
+                        data: moveData
+                    },
+                    {
+                        name: '工作地点',
+                        type: 'effectScatter',
+                        coordinateSystem: 'geo',
+                        zlevel: 2,
+                        rippleEffect: {
+                            brushType: 'stroke',
+                            scale: 3
+                        },
+                        label: {
+                            show: true,
+                            position: 'right',
+                            formatter: '{b}',
+                            fontFamily: 'retro1',
+                            fontSize: 12
+                        },
+                        symbolSize: function (val) {
+                            return 8 + val[2] * 1.5;
+                        },
+                        itemStyle: {
+                            color: '#3498db'
+                        },
+                        data: points
+                    }
+                ]
+            });
+
+            window.addEventListener('resize', () => mapChart && mapChart.resize());
+        }
+
+        // 启动
+        init();
+    </script>
+</body>
+</html>
