@@ -6,9 +6,9 @@
     <title>CPED 官员生涯追踪系统</title>
     <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
     <script src="https://d3js.org/d3.v7.min.js"></script>
-    <link rel="stylesheet" href="../../libs/font-awesome/css/font-awesome.min.css">
-    <link rel="stylesheet" href="../../assets/css/styles.css">
-    <link rel="stylesheet" href="../../assets/css/effects.css">
+    <link rel="stylesheet" href="/libs/font-awesome/css/font-awesome.min.css">
+    <link rel="stylesheet" href="/assets/css/styles.css">
+    <link rel="stylesheet" href="/assets/css/effects.css">
     <style>
         * {
             margin: 0;
@@ -21,7 +21,7 @@
             background: #f5f5f5;
             color: #333;
             min-height: 100vh;
-            cursor: URL("../../assets/img/cursor/cursor.png"), auto !important;
+            cursor: URL("/assets/img/cursor/cursor.png"), auto !important;
         }
 
         /* 头部导航 */
@@ -451,7 +451,7 @@
         <div class="header-content">
             <h1><i class="fa fa-users"></i> CPED 官员生涯追踪系统</h1>
             <div>
-                <a href="../../index.html" class="btn btn-primary">
+                <a href="/index.html" class="btn btn-primary">
                     <i class="fa fa-home"></i> 返回首页
                 </a>
             </div>
@@ -511,18 +511,48 @@
 
         // 初始化
         async function init() {
+            const container = document.getElementById('officials-list');
+            container.innerHTML = `
+                <div class="loading-box" id="loading-status">
+                    <i class="fa fa-spinner fa-spin"></i><br>
+                    正在加载数据...<br>
+                    <small style="font-size: 12px; color: #666;">数据文件约 55MB，请耐心等待</small>
+                    <div style="margin-top: 10px; font-size: 12px;" id="loading-progress"></div>
+                </div>
+            `;
+
             try {
-                const response = await fetch('../../assets/data/cped/cped_data.json');
+                const startTime = Date.now();
+                const response = await fetch('/assets/data/cped/cped_data.json');
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+
+                // 更新加载状态
+                const progressEl = document.getElementById('loading-progress');
+                if (progressEl) {
+                    progressEl.textContent = '正在解析数据...';
+                }
+
                 cpedData = await response.json();
-                officialsList = cpedData.officials;
+                officialsList = cpedData.officials || [];
+
+                const loadTime = ((Date.now() - startTime) / 1000).toFixed(1);
+                console.log(`数据加载完成: ${officialsList.length} 位官员, 耗时 ${loadTime}秒`);
+
                 renderOfficialsList(officialsList.slice(0, 50));
             } catch (error) {
                 console.error('数据加载失败:', error);
-                document.getElementById('officials-list').innerHTML = `
+                container.innerHTML = `
                     <div class="loading-box" style="color: #e74c3c;">
                         <i class="fa fa-exclamation-triangle"></i><br>
                         数据加载失败<br>
-                        <small>${error.message}</small>
+                        <small>${error.message}</small><br>
+                        <small>请检查网络连接或刷新页面重试</small><br>
+                        <button class="btn btn-primary" onclick="location.reload()" style="margin-top: 15px;">
+                            <i class="fa fa-refresh"></i> 刷新页面
+                        </button>
                     </div>
                 `;
             }
@@ -588,9 +618,10 @@
 
         // 渲染官员详情
         function renderOfficialDetail() {
-            const careers = cpedData.careers[currentOfficial.id] || [];
-            const timelineData = cpedData.levelTimelines?.[currentOfficial.id] || [];
-            const geoData = cpedData.geoMovements?.[currentOfficial.id] || [];
+            const id = String(currentOfficial.id);
+            const careers = cpedData.careers[id] || [];
+            const timelineData = cpedData.levelTimelines?.[id] || [];
+            const geoData = cpedData.geoMovements?.[id] || [];
 
             const content = document.getElementById('main-content');
             content.innerHTML = `
