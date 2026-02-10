@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>城市领导查询 - CPED</title>
+  <meta name="description" content="查询各城市历任市长和市委书记">
+
+  <link rel="stylesheet" href="../../libs/font-awesome/css/font-awesome.min.css">
+  <link rel="stylesheet" href="css/theme.css">
+  <style>
+    .app-container {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .app-header {
+      background: var(--bg-header);
+      color: white;
+      border-bottom: 4px solid var(--border-color);
+      padding: 15px 0;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 4px 0 rgba(0,0,0,0.2);
+    }
+
+    .header-content {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 0 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .app-title {
+      font-family: var(--font-pixel);
+      font-size: 16px;
+      margin: 0;
+    }
+
+    .app-title i {
+      color: var(--primary-color);
+      margin-right: 8px;
+    }
+
+    .main-content {
+      flex: 1;
+      max-width: 1400px;
+      margin: 0 auto;
+      width: 100%;
+      padding: 24px;
+    }
+
+    .page-title {
+      font-family: var(--font-pixel);
+      font-size: 18px;
+      margin-bottom: 24px;
+      padding-bottom: 12px;
+      border-bottom: 3px solid var(--border-color);
+    }
+
+    .search-box {
+      margin-bottom: 24px;
+    }
+
+    .search-box input {
+      width: 100%;
+      max-width: 400px;
+      padding: 12px 16px;
+      font-family: var(--font-pixel-alt);
+      font-size: 14px;
+      border: 3px solid var(--border-color);
+      box-shadow: 4px 4px 0 rgba(0,0,0,0.15);
+    }
+
+    .cities-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 16px;
+    }
+
+    .city-card {
+      background: var(--bg-card);
+      border: 3px solid var(--border-color);
+      box-shadow: 4px 4px 0 rgba(0,0,0,0.2);
+      padding: 16px;
+      cursor: pointer;
+      transition: transform 0.1s, box-shadow 0.1s;
+    }
+
+    .city-card:hover {
+      transform: translate(2px, 2px);
+      box-shadow: 2px 2px 0 rgba(0,0,0,0.2);
+    }
+
+    .city-name {
+      font-family: var(--font-pixel);
+      font-size: 14px;
+      margin-bottom: 8px;
+    }
+
+    .city-province {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-bottom: 12px;
+    }
+
+    .city-stats {
+      display: flex;
+      gap: 16px;
+      font-size: 12px;
+    }
+
+    .city-stats span {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .city-stats i {
+      color: var(--primary-color);
+    }
+
+    .loading-state {
+      text-align: center;
+      padding: 60px;
+    }
+
+    .loading-state i {
+      font-size: 48px;
+      color: var(--primary-color);
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 60px;
+      color: var(--text-muted);
+    }
+
+    @media (max-width: 768px) {
+      .cities-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app-container">
+    <header class="app-header">
+      <div class="header-content">
+        <h1 class="app-title">
+          <i class="fa fa-building"></i>
+          城市领导查询
+        </h1>
+        <div>
+          <a href="index.html" class="btn btn-primary">
+            <i class="fa fa-users"></i> 官员列表
+          </a>
+          <a href="../../index.html" class="btn btn-primary">
+            <i class="fa fa-home"></i> 返回首页
+          </a>
+        </div>
+      </div>
+    </header>
+
+    <main class="main-content">
+      <h2 class="page-title">
+        <i class="fa fa-map-marker"></i>
+        选择城市查看历任领导
+      </h2>
+
+      <div class="search-box">
+        <input type="text" id="city-search" placeholder="搜索城市名称...">
+      </div>
+
+      <div id="cities-container">
+        <div class="loading-state">
+          <i class="fa fa-spinner fa-spin"></i>
+          <p>正在加载城市数据...</p>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script type="module">
+    import { dataLoader } from './js/services/dataLoader.js';
+
+    let allCities = [];
+
+    async function init() {
+      try {
+        const cities = await dataLoader.getCitiesList();
+        allCities = cities.filter(c => c.city && c.city !== '不详');
+        renderCities(allCities);
+      } catch (error) {
+        console.error('加载城市数据失败:', error);
+        document.getElementById('cities-container').innerHTML = `
+          <div class="empty-state">
+            <i class="fa fa-exclamation-triangle"></i>
+            <p>加载失败: ${error.message}</p>
+          </div>
+        `;
+      }
+    }
+
+    function renderCities(cities) {
+      const container = document.getElementById('cities-container');
+
+      if (cities.length === 0) {
+        container.innerHTML = `
+          <div class="empty-state">
+            <i class="fa fa-search"></i>
+            <p>没有找到匹配的城市</p>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = `
+        <div class="cities-grid">
+          ${cities.map(city => `
+            <div class="city-card" onclick="goToCity('${city.province}', '${city.city}')">
+              <div class="city-name">${city.city}</div>
+              <div class="city-province">${city.province}</div>
+              <div class="city-stats">
+                <span><i class="fa fa-users"></i> ${city.officialCount} 位官员</span>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      `;
+    }
+
+    window.goToCity = function(province, city) {
+      window.location.href = `city.html?province=${encodeURIComponent(province)}&city=${encodeURIComponent(city)}`;
+    };
+
+    // 搜索功能
+    document.getElementById('city-search').addEventListener('input', (e) => {
+      const keyword = e.target.value.toLowerCase().trim();
+      if (!keyword) {
+        renderCities(allCities);
+        return;
+      }
+
+      const filtered = allCities.filter(c =>
+        c.city.toLowerCase().includes(keyword) ||
+        c.province.toLowerCase().includes(keyword)
+      );
+      renderCities(filtered);
+    });
+
+    init();
+  </script>
+</body>
+</html>

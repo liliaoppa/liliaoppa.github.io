@@ -200,6 +200,104 @@ class DataLoader {
   }
 
   /**
+   * 获取所有城市列表（从所有官员的career数据中提取）
+   * @returns {Promise<Array>} 城市列表
+   */
+  async getCitiesList() {
+    const officials = await this.getOfficialsList();
+    const citiesMap = new Map();
+
+    // 并行加载所有官员的career数据（限制并发）
+    const batchSize = 10;
+    for (let i = 0; i < officials.length; i += batchSize) {
+      const batch = officials.slice(i, i + batchSize);
+      await Promise.all(batch.map(async (official) => {
+        try {
+          const data = await this.loadOfficialData(official.id);
+          if (data.careers) {
+            data.careers.forEach(career => {
+              if (career.city && career.city !== '不详' && career.city !== '') {
+                const key = `${career.province}-${career.city}`;
+                if (!citiesMap.has(key)) {
+                  citiesMap.set(key, {
+                    province: career.province,
+                    city: career.city,
+                    officialIds: new Set()
+                  });
+                }
+                citiesMap.get(key).officialIds.add(official.id);
+              }
+            });
+          }
+        } catch (e) {
+          // 忽略加载失败的官员
+        }
+      }));
+    }
+
+    // 转换为数组并排序
+    return Array.from(citiesMap.values())
+      .map(c => ({
+        province: c.province,
+        city: c.city,
+        officialCount: c.officialIds.size
+      }))
+      .sort((a, b) => b.officialCount - a.officialCount);
+  }
+
+  /**
+   * 获取城市的领导列表（市长和市委书记）
+   * @param {string} province - 省份
+   * @param {string} city - 城市
+   * @returns {Promise<Object>} { mayors: Array, secretaries: Array }
+   */
+  async getCityLeaders(province, city) {
+    const officials = await this.getOfficialsList();
+    const mayors = [];
+    const secretaries = [];
+
+    await Promise.all(officials.map(async (official) => {
+      try {
+        const data = await this.loadOfficialData(official.id);
+        if (!data.careers) return;
+
+        data.careers.forEach(career => {
+          if (career.city === city && career.province === province) {
+            const leaderInfo = {
+              id: official.id,
+              name: official.name,
+              position: career.specificPosition,
+              level: career.level,
+              startDate: career.startDate,
+              endDate: career.endDate,
+              category: career.category
+            };
+
+            // 判断是市长还是书记
+            const pos = career.specificPosition || '';
+            const cat = career.category || '';
+
+            if (pos.includes('市长') && !pos.includes('副')) {
+              mayors.push(leaderInfo);
+            } else if (pos.includes('书记') && !pos.includes('副') && cat.includes('党委')) {
+              secretaries.push(leaderInfo);
+            }
+          }
+        });
+      } catch (e) {
+        // 忽略加载失败的官员
+      }
+    }));
+
+    // 按时间排序
+    const sortByDate = (a, b) => new Date(a.startDate) - new Date(b.startDate);
+    mayors.sort(sortByDate);
+    secretaries.sort(sortByDate);
+
+    return { mayors, secretaries };
+  }
+
+  /**
    * 实际获取官员数据的内部方法
    * @private
    */

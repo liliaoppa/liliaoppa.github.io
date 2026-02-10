@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>城市领导详情 - CPED</title>
+  <meta name="description" content="城市历任市长和市委书记详情">
+
+  <link rel="stylesheet" href="../../libs/font-awesome/css/font-awesome.min.css">
+  <link rel="stylesheet" href="css/theme.css">
+  <style>
+    .app-container {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .app-header {
+      background: var(--bg-header);
+      color: white;
+      border-bottom: 4px solid var(--border-color);
+      padding: 15px 0;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 4px 0 rgba(0,0,0,0.2);
+    }
+
+    .header-content {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 0 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .app-title {
+      font-family: var(--font-pixel);
+      font-size: 16px;
+      margin: 0;
+    }
+
+    .app-title i {
+      color: var(--primary-color);
+      margin-right: 8px;
+    }
+
+    .main-content {
+      flex: 1;
+      max-width: 1400px;
+      margin: 0 auto;
+      width: 100%;
+      padding: 24px;
+    }
+
+    .city-header {
+      background: var(--bg-card);
+      border: 3px solid var(--border-color);
+      box-shadow: 4px 4px 0 rgba(0,0,0,0.2);
+      padding: 24px;
+      margin-bottom: 24px;
+    }
+
+    .city-name {
+      font-family: var(--font-pixel);
+      font-size: 24px;
+      margin-bottom: 8px;
+    }
+
+    .city-province {
+      font-size: 14px;
+      color: var(--text-muted);
+    }
+
+    .leaders-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+    }
+
+    .leader-section {
+      background: var(--bg-card);
+      border: 3px solid var(--border-color);
+      box-shadow: 4px 4px 0 rgba(0,0,0,0.2);
+    }
+
+    .section-header {
+      background: var(--bg-header);
+      color: white;
+      padding: 16px;
+      border-bottom: 3px solid var(--border-color);
+    }
+
+    .section-header h3 {
+      font-family: var(--font-pixel);
+      font-size: 14px;
+      margin: 0;
+    }
+
+    .section-header i {
+      color: var(--primary-color);
+      margin-right: 8px;
+    }
+
+    .leader-list {
+      padding: 0;
+    }
+
+    .leader-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 16px;
+      border-bottom: 2px solid var(--border-color);
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+
+    .leader-item:last-child {
+      border-bottom: none;
+    }
+
+    .leader-item:hover {
+      background: var(--primary-color);
+      color: white;
+    }
+
+    .leader-item:hover .leader-period {
+      color: rgba(255,255,255,0.8);
+    }
+
+    .leader-info {
+      flex: 1;
+    }
+
+    .leader-name {
+      font-family: var(--font-pixel);
+      font-size: 14px;
+      margin-bottom: 4px;
+    }
+
+    .leader-position {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .leader-item:hover .leader-position {
+      color: rgba(255,255,255,0.9);
+    }
+
+    .leader-period {
+      font-size: 11px;
+      color: var(--text-muted);
+      text-align: right;
+    }
+
+    .leader-level {
+      display: inline-block;
+      padding: 2px 8px;
+      font-size: 10px;
+      background: var(--bg-header);
+      color: white;
+      border: 1px solid var(--border-color);
+      margin-top: 4px;
+    }
+
+    .loading-state {
+      text-align: center;
+      padding: 60px;
+    }
+
+    .loading-state i {
+      font-size: 48px;
+      color: var(--primary-color);
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 40px;
+      color: var(--text-muted);
+    }
+
+    .empty-state i {
+      font-size: 32px;
+      margin-bottom: 12px;
+    }
+
+    @media (max-width: 768px) {
+      .leaders-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .header-content {
+        flex-direction: column;
+        gap: 12px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app-container">
+    <header class="app-header">
+      <div class="header-content">
+        <h1 class="app-title">
+          <i class="fa fa-building"></i>
+          城市领导详情
+        </h1>
+        <div>
+          <a href="cities.html" class="btn btn-primary">
+            <i class="fa fa-arrow-left"></i> 返回城市列表
+          </a>
+          <a href="index.html" class="btn btn-primary">
+            <i class="fa fa-users"></i> 官员列表
+          </a>
+        </div>
+      </div>
+    </header>
+
+    <main class="main-content">
+      <div class="city-header">
+        <div class="city-name" id="city-name">加载中...</div>
+        <div class="city-province" id="city-province"></div>
+      </div>
+
+      <div class="leaders-grid">
+        <div class="leader-section">
+          <div class="section-header">
+            <h3><i class="fa fa-user"></i> 历任市长</h3>
+          </div>
+          <div class="leader-list" id="mayors-list">
+            <div class="loading-state">
+              <i class="fa fa-spinner fa-spin"></i>
+              <p>加载中...</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="leader-section">
+          <div class="section-header">
+            <h3><i class="fa fa-user"></i> 历任市委书记</h3>
+          </div>
+          <div class="leader-list" id="secretaries-list">
+            <div class="loading-state">
+              <i class="fa fa-spinner fa-spin"></i>
+              <p>加载中...</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script type="module">
+    import { dataLoader } from './js/services/dataLoader.js';
+
+    // 获取URL参数
+    const urlParams = new URLSearchParams(window.location.search);
+    const province = urlParams.get('province');
+    const city = urlParams.get('city');
+
+    if (!province || !city) {
+      window.location.href = 'cities.html';
+    }
+
+    // 设置页面标题
+    document.getElementById('city-name').textContent = city;
+    document.getElementById('city-province').textContent = province;
+    document.title = `${city} - 城市领导详情 - CPED`;
+
+    async function loadLeaders() {
+      try {
+        const { mayors, secretaries } = await dataLoader.getCityLeaders(province, city);
+
+        renderLeaderList('mayors-list', mayors);
+        renderLeaderList('secretaries-list', secretaries);
+      } catch (error) {
+        console.error('加载领导数据失败:', error);
+        document.getElementById('mayors-list').innerHTML = `
+          <div class="empty-state">
+            <i class="fa fa-exclamation-triangle"></i>
+            <p>加载失败: ${error.message}</p>
+          </div>
+        `;
+        document.getElementById('secretaries-list').innerHTML = `
+          <div class="empty-state">
+            <i class="fa fa-exclamation-triangle"></i>
+            <p>加载失败</p>
+          </div>
+        `;
+      }
+    }
+
+    function renderLeaderList(containerId, leaders) {
+      const container = document.getElementById(containerId);
+
+      if (leaders.length === 0) {
+        container.innerHTML = `
+          <div class="empty-state">
+            <i class="fa fa-inbox"></i>
+            <p>暂无数据</p>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = leaders.map(leader => `
+        <div class="leader-item" onclick="goToOfficial(${leader.id})">
+          <div class="leader-info">
+            <div class="leader-name">${leader.name}</div>
+            <div class="leader-position">${leader.position}</div>
+            <span class="leader-level">${leader.level}</span>
+          </div>
+          <div class="leader-period">
+            ${formatDate(leader.startDate)}<br>~<br>${leader.endDate ? formatDate(leader.endDate) : '至今'}
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function formatDate(dateStr) {
+      if (!dateStr) return '-';
+      const date = new Date(dateStr);
+      return `${date.getFullYear()}.${String(date.getMonth() + 1).padStart(2, '0')}`;
+    }
+
+    window.goToOfficial = function(id) {
+      window.location.href = `index.html?id=${id}`;
+    };
+
+    loadLeaders();
+  </script>
+</body>
+</html>
