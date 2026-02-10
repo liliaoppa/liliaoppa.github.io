@@ -189,27 +189,9 @@
     import { dataLoader } from './js/services/dataLoader.js';
 
     let allCities = [];
-    let loadingProgress = { current: 0, total: 0 };
 
     async function init() {
       try {
-        const officials = await dataLoader.getOfficialsList();
-        loadingProgress.total = officials.length;
-
-        // 显示加载进度
-        updateLoadingProgress();
-
-        // 监听数据加载进度
-        const originalLoadOfficialData = dataLoader.loadOfficialData.bind(dataLoader);
-        dataLoader.loadOfficialData = async (id) => {
-          const result = await originalLoadOfficialData(id);
-          loadingProgress.current++;
-          if (loadingProgress.current % 50 === 0) {
-            updateLoadingProgress();
-          }
-          return result;
-        };
-
         const cities = await dataLoader.getCitiesList();
         allCities = cities.filter(c => c.city && c.city !== '不详');
         renderCities(allCities);
@@ -222,21 +204,6 @@
           </div>
         `;
       }
-    }
-
-    function updateLoadingProgress() {
-      const container = document.getElementById('cities-container');
-      const percent = loadingProgress.total > 0
-        ? Math.round((loadingProgress.current / loadingProgress.total) * 100)
-        : 0;
-      container.innerHTML = `
-        <div class="loading-state">
-          <i class="fa fa-spinner fa-spin"></i>
-          <p>正在分析 ${loadingProgress.total} 位官员的履历数据...</p>
-          <p style="font-size: 14px; color: #666; margin-top: 8px;">${loadingProgress.current} / ${loadingProgress.total} (${percent}%)</p>
-          <p style="font-size: 12px; color: #999; margin-top: 8px;">这可能需要 30-60 秒</p>
-        </div>
-      `;
     }
 
     function renderCities(cities) {

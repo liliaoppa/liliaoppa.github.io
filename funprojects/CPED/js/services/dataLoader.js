@@ -199,142 +199,84 @@ class DataLoader {
     this.#loadingPromises.clear();
   }
 
+  #cityLeadersData = null;
+
   /**
-   * 获取所有城市列表（从所有官员的career数据中提取）
-   * @returns {Promise<Array>} 城市列表
+   * 加载预生成的城市-领导数据
+   * @private
    */
-  async getCitiesList() {
-    const officials = await this.getOfficialsList();
-    const citiesMap = new Map();
-
-    // 限制并发数，避免浏览器卡死
-    const batchSize = 20;
-    for (let i = 0; i < officials.length; i += batchSize) {
-      const batch = officials.slice(i, i + batchSize);
-      await Promise.all(batch.map(async (official) => {
-        try {
-          const data = await this.loadOfficialData(official.id);
-          if (!data.careers) return;
-
-          // 只提取该官员担任过市长或书记的城市
-          let hasLeadershipRole = false;
-          data.careers.forEach(career => {
-            const pos = career.specificPosition || '';
-            const cat = career.category || '';
-            const isMayor = pos === '市长' || pos.includes('代市长') || pos.includes('市委副书记、市长');
-            const isSecretary = pos === '书记' || pos === '市委书记' || (pos.includes('书记') && cat.includes('党委') && !pos.includes('副'));
-
-            if ((isMayor || isSecretary) && career.city && career.city !== '不详' && career.city !== '') {
-              hasLeadershipRole = true;
-              const key = `${career.province}-${career.city}`;
-              if (!citiesMap.has(key)) {
-                citiesMap.set(key, {
-                  province: career.province,
-                  city: career.city,
-                  officialIds: new Set()
-                });
-              }
-              citiesMap.get(key).officialIds.add(official.id);
-            }
-          });
-        } catch (e) {
-          // 忽略加载失败的官员
-        }
-      }));
-
-      // 每批次后给浏览器喘息时间，并更新进度（可选）
-      if (i + batchSize < officials.length) {
-        await new Promise(resolve => setTimeout(resolve, 10));
-      }
+  async #loadCityLeadersData() {
+    if (this.#cityLeadersData) {
+      return this.#cityLeadersData;
     }
 
-    // 转换为数组并排序（按官员数量降序）
-    return Array.from(citiesMap.values())
-      .map(c => ({
-        province: c.province,
-        city: c.city,
-        officialCount: c.officialIds.size
-      }))
-      .sort((a, b) => b.officialCount - a.officialCount);
+    try {
+      // 获取当前URL路径，构建相对路径
+      const url = new URL(window.location.href);
+      const pathParts = url.pathname.split('/').filter(Boolean);
+      const cpedIndex = pathParts.indexOf('CPED');
+
+      let dataUrl;
+      if (cpedIndex >= 0) {
+        const baseParts = pathParts.slice(0, cpedIndex + 1);
+        const basePath = '/' + baseParts.join('/');
+        dataUrl = `${url.origin}${basePath}/data/city-leaders.json`;
+      } else {
+        dataUrl = `${url.origin}/funprojects/CPED/data/city-leaders.json`;
+      }
+
+      console.log('[DataLoader] Loading city leaders from:', dataUrl);
+
+      const response = await fetchWithTimeout(dataUrl, {}, 30000);
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`);
+      }
+
+      const data = await response.json();
+      this.#cityLeadersData = data;
+      console.log('[DataLoader] City leaders loaded:', data.cities?.length || 0, 'cities');
+      return data;
+    } catch (error) {
+      console.error('[DataLoader] Failed to load city leaders:', error);
+      return { cities: [] };
+    }
   }
 
   /**
-   * 获取城市的领导列表（市长和市委书记）
+   * 获取所有城市列表（使用预生成数据）
+   * @returns {Promise<Array>} 城市列表
+   */
+  async getCitiesList() {
+    const data = await this.#loadCityLeadersData();
+
+    return (data.cities || []).map(c => ({
+      province: c.province,
+      city: c.city,
+      officialCount: c.stats?.mayorCount + c.stats?.secretaryCount || 0
+    }));
+  }
+
+  /**
+   * 获取城市的领导列表（市长和市委书记）- 使用预生成数据
    * @param {string} province - 省份
    * @param {string} city - 城市
    * @returns {Promise<Object>} { mayors: Array, secretaries: Array }
    */
   async getCityLeaders(province, city) {
-    const officials = await this.getOfficialsList();
-    const mayors = [];
-    const secretaries = [];
+    const data = await this.#loadCityLeadersData();
 
-    // 限制并发数，避免浏览器卡死
-    const batchSize = 20;
-    for (let i = 0; i < officials.length; i += batchSize) {
-      const batch = officials.slice(i, i + batchSize);
-      await Promise.all(batch.map(async (official) => {
-        try {
-          const data = await this.loadOfficialData(official.id);
-          if (!data.careers) return;
+    const cityData = (data.cities || []).find(
+      c => c.province === province && c.city === city
+    );
 
-          data.careers.forEach(career => {
-            // 只处理该城市的记录
-            if (career.city !== city || career.province !== province) return;
-
-            const pos = career.specificPosition || '';
-            const cat = career.category || '';
-
-            // 只处理市长或书记职位
-            const isMayor = pos === '市长' || pos === '市委副书记、市长' || pos === '代市长';
-            const isSecretary = pos === '书记' || pos === '市委书记' || (pos.includes('书记') && cat.includes('党委') && !pos.includes('副'));
-
-            if (isMayor || isSecretary) {
-              const leaderInfo = {
-                id: official.id,
-                name: official.name,
-                position: career.specificPosition,
-                level: career.level,
-                startDate: career.startDate,
-                endDate: career.endDate,
-                category: career.category
-              };
-
-              if (isMayor) {
-                mayors.push(leaderInfo);
-              } else {
-                secretaries.push(leaderInfo);
-              }
-            }
-          });
-        } catch (e) {
-          // 忽略加载失败的官员
-        }
-      }));
-
-      // 每批次后给浏览器喘息时间
-      if (i + batchSize < officials.length) {
-        await new Promise(resolve => setTimeout(resolve, 10));
-      }
+    if (!cityData) {
+      return { mayors: [], secretaries: [] };
     }
 
-    // 按时间排序
-    const sortByDate = (a, b) => new Date(a.startDate) - new Date(b.startDate);
-    mayors.sort(sortByDate);
-    secretaries.sort(sortByDate);
-
-    // 去重：同一官员同一职位的多个记录只保留第一个
-    const dedup = (arr) => {
-      const seen = new Set();
-      return arr.filter(item => {
-        const key = `${item.id}-${item.position}`;
-        if (seen.has(key)) return false;
-        seen.add(key);
-        return true;
-      });
+    return {
+      mayors: cityData.mayors || [],
+      secretaries: cityData.secretaries || []
     };
-
-    return { mayors: dedup(mayors), secretaries: dedup(secretaries) };
   }
 
   /**

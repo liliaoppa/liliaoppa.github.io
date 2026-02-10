@@ -269,35 +269,6 @@
     document.title = `${city} - 城市领导详情 - CPED`;
 
     async function loadLeaders() {
-      const officials = await dataLoader.getOfficialsList();
-      const total = officials.length;
-      let current = 0;
-
-      // 显示加载进度
-      const updateProgress = () => {
-        const percent = Math.round((current / total) * 100);
-        const html = `
-          <div class="loading-state">
-            <i class="fa fa-spinner fa-spin"></i>
-            <p>正在搜索 ${total} 位官员的履历...</p>
-            <p style="font-size: 14px; color: #666; margin-top: 8px;">${current} / ${total} (${percent}%)</p>
-          </div>
-        `;
-        document.getElementById('mayors-list').innerHTML = html;
-        document.getElementById('secretaries-list').innerHTML = html;
-      };
-
-      // 重写加载方法以跟踪进度
-      const originalLoad = dataLoader.loadOfficialData.bind(dataLoader);
-      dataLoader.loadOfficialData = async (id) => {
-        const result = await originalLoad(id);
-        current++;
-        if (current % 20 === 0) {
-          updateProgress();
-        }
-        return result;
-      };
-
       try {
         const { mayors, secretaries } = await dataLoader.getCityLeaders(province, city);
 
