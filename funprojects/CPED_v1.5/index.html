@@ -1,0 +1,1031 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CPED 官员生涯追踪系统</title>
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    <style>
+        /* 马赛克网格样式 */
+        .mosaic-grid {
+            display: grid;
+            grid-template-columns: 80px repeat(auto-fill, minmax(40px, 1fr));
+            gap: 2px;
+            padding: 20px;
+            background: var(--gray-light);
+            border: 4px solid var(--black);
+            overflow-x: auto;
+        }
+
+        .mosaic-label {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            padding-right: 10px;
+            font-size: 14px;
+            font-weight: bold;
+            color: var(--black);
+        }
+
+        .mosaic-cell {
+            aspect-ratio: 1;
+            border: 2px solid var(--black);
+            min-width: 40px;
+            min-height: 40px;
+        }
+
+        .mosaic-cell.filled {
+            background: var(--red-primary);
+        }
+
+        .mosaic-cell.empty {
+            background: var(--white);
+        }
+
+        .mosaic-header {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: bold;
+            color: var(--white);
+            background: var(--red-dark);
+            border: 2px solid var(--black);
+            min-width: 40px;
+            min-height: 40px;
+        }
+
+        .mosaic-cell:hover {
+            transform: scale(1.2);
+            z-index: 10;
+            box-shadow: 0 0 0 3px var(--black);
+            position: relative;
+        }
+    </style>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=VT323&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            image-rendering: pixelated;
+            image-rendering: crisp-edges;
+        }
+
+        :root {
+            --red-primary: #ff0040;
+            --red-dark: #cc0033;
+            --red-light: #ff3366;
+            --white: #ffffff;
+            --gray-light: #f0f0f0;
+            --gray: #cccccc;
+            --black: #1a1a1a;
+        }
+
+        body {
+            font-family: 'VT323', monospace;
+            background: var(--white);
+            color: var(--black);
+            min-height: 100vh;
+            font-size: 18px;
+        }
+
+        /* 8BIT 边框效果 */
+        .pixel-border {
+            border: 4px solid var(--black);
+            box-shadow:
+                4px 4px 0 var(--red-primary),
+                8px 8px 0 rgba(0,0,0,0.2);
+        }
+
+        .pixel-border-thick {
+            border: 6px solid var(--black);
+            box-shadow:
+                6px 6px 0 var(--red-primary),
+                12px 12px 0 rgba(0,0,0,0.15);
+        }
+
+        /* 头部 */
+        header {
+            background: var(--red-primary);
+            color: var(--white);
+            padding: 20px;
+            border-bottom: 6px solid var(--black);
+            text-align: center;
+        }
+
+        h1 {
+            font-family: 'Press Start 2P', cursive;
+            font-size: 24px;
+            text-shadow: 4px 4px 0 var(--red-dark);
+            margin-bottom: 10px;
+            letter-spacing: 2px;
+        }
+
+        .subtitle {
+            font-size: 20px;
+            opacity: 0.9;
+        }
+
+        /* 主容器 */
+        .main-container {
+            display: grid;
+            grid-template-columns: 320px 1fr;
+            min-height: calc(100vh - 100px);
+        }
+
+        /* 左侧搜索面板 */
+        .sidebar {
+            background: var(--gray-light);
+            border-right: 6px solid var(--black);
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .panel-title {
+            font-family: 'Press Start 2P', cursive;
+            font-size: 12px;
+            color: var(--red-primary);
+            margin-bottom: 15px;
+            padding: 10px;
+            background: var(--white);
+            border: 3px solid var(--black);
+        }
+
+        /* 搜索框 */
+        .search-box {
+            margin-bottom: 20px;
+        }
+
+        .pixel-input {
+            width: 100%;
+            padding: 12px;
+            font-family: 'VT323', monospace;
+            font-size: 20px;
+            border: 4px solid var(--black);
+            background: var(--white);
+            outline: none;
+            transition: all 0.1s;
+        }
+
+        .pixel-input:focus {
+            background: #fff5f7;
+            box-shadow: inset 0 0 0 3px var(--red-primary);
+        }
+
+        /* 按钮 */
+        .pixel-btn {
+            width: 100%;
+            padding: 12px;
+            margin-top: 10px;
+            font-family: 'Press Start 2P', cursive;
+            font-size: 10px;
+            background: var(--red-primary);
+            color: var(--white);
+            border: 4px solid var(--black);
+            cursor: pointer;
+            text-transform: uppercase;
+            transition: all 0.1s;
+            box-shadow: 4px 4px 0 var(--black);
+        }
+
+        .pixel-btn:hover {
+            transform: translate(-2px, -2px);
+            box-shadow: 6px 6px 0 var(--black);
+        }
+
+        .pixel-btn:active {
+            transform: translate(2px, 2px);
+            box-shadow: 2px 2px 0 var(--black);
+        }
+
+        .pixel-btn.secondary {
+            background: var(--white);
+            color: var(--black);
+        }
+
+        /* 官员列表 */
+        .officials-list {
+            max-height: 400px;
+            overflow-y: auto;
+            border: 4px solid var(--black);
+            background: var(--white);
+        }
+
+        .official-item {
+            padding: 12px;
+            border-bottom: 2px solid var(--gray);
+            cursor: pointer;
+            transition: all 0.1s;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .official-item:hover {
+            background: var(--red-primary);
+            color: var(--white);
+        }
+
+        .official-item.active {
+            background: var(--red-dark);
+            color: var(--white);
+        }
+
+        .official-name {
+            font-size: 22px;
+            font-weight: bold;
+        }
+
+        .official-info {
+            font-size: 16px;
+            opacity: 0.7;
+        }
+
+        /* 主内容区 */
+        .content {
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        /* 官员信息卡片 */
+        .profile-card {
+            background: var(--white);
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .profile-header {
+            display: flex;
+            gap: 30px;
+            margin-bottom: 20px;
+        }
+
+        .avatar {
+            width: 120px;
+            height: 120px;
+            background: var(--red-primary);
+            border: 6px solid var(--black);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Press Start 2P', cursive;
+            font-size: 48px;
+            color: var(--white);
+        }
+
+        .profile-basic {
+            flex: 1;
+        }
+
+        .profile-name {
+            font-family: 'Press Start 2P', cursive;
+            font-size: 24px;
+            color: var(--red-primary);
+            margin-bottom: 15px;
+            text-shadow: 3px 3px 0 var(--gray);
+        }
+
+        .profile-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+        }
+
+        .stat-box {
+            background: var(--gray-light);
+            border: 3px solid var(--black);
+            padding: 10px;
+            text-align: center;
+        }
+
+        .stat-label {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 5px;
+        }
+
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: var(--red-primary);
+        }
+
+        /* 格子图表容器 */
+        .grid-section {
+            margin-bottom: 30px;
+        }
+
+        .section-title {
+            font-family: 'Press Start 2P', cursive;
+            font-size: 14px;
+            color: var(--white);
+            background: var(--red-primary);
+            padding: 15px;
+            border: 4px solid var(--black);
+            margin-bottom: 15px;
+        }
+
+        /* 马赛克级别图 */
+        .level-grid {
+            display: grid;
+            grid-template-columns: repeat(12, 1fr);
+            gap: 4px;
+            padding: 20px;
+            background: var(--gray-light);
+            border: 4px solid var(--black);
+        }
+
+        .level-cell {
+            aspect-ratio: 1;
+            border: 2px solid var(--black);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.1s;
+            position: relative;
+        }
+
+        .level-cell:hover {
+            transform: scale(1.1);
+            z-index: 10;
+            box-shadow: 0 0 0 4px var(--black);
+        }
+
+        .level-cell.empty {
+            background: var(--white);
+            opacity: 0.3;
+        }
+
+        .level-cell.level-1 { background: #ffcccc; }
+        .level-cell.level-2 { background: #ff9999; }
+        .level-cell.level-3 { background: #ff6666; }
+        .level-cell.level-4 { background: #ff3333; }
+        .level-cell.level-5 { background: #ff0000; color: white; }
+        .level-cell.level-6 { background: #cc0000; color: white; }
+        .level-cell.level-7 { background: #990000; color: white; }
+        .level-cell.level-8 { background: #660000; color: white; }
+        .level-cell.level-9 { background: #330000; color: white; }
+
+        .cell-tooltip {
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--black);
+            color: var(--white);
+            padding: 8px;
+            font-size: 14px;
+            white-space: nowrap;
+            z-index: 100;
+            display: none;
+            border: 2px solid var(--red-primary);
+        }
+
+        .level-cell:hover .cell-tooltip {
+            display: block;
+        }
+
+        /* 地图容器 */
+        .map-container {
+            height: 500px;
+            border: 4px solid var(--black);
+            background: var(--gray-light);
+        }
+
+        /* 时间线 */
+        .timeline {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            padding: 20px;
+            background: var(--gray-light);
+            border: 4px solid var(--black);
+        }
+
+        .timeline-item {
+            flex: 1;
+            min-width: 200px;
+            background: var(--white);
+            border: 3px solid var(--black);
+            padding: 15px;
+            position: relative;
+        }
+
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            top: -3px;
+            left: -3px;
+            right: -3px;
+            height: 6px;
+            background: var(--red-primary);
+        }
+
+        .timeline-date {
+            font-family: 'Press Start 2P', cursive;
+            font-size: 10px;
+            color: var(--red-primary);
+            margin-bottom: 8px;
+        }
+
+        .timeline-position {
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .timeline-location {
+            font-size: 16px;
+            color: #666;
+        }
+
+        .timeline-level-tag {
+            display: inline-block;
+            padding: 4px 8px;
+            background: var(--red-primary);
+            color: var(--white);
+            font-size: 14px;
+            margin-top: 8px;
+            border: 2px solid var(--black);
+        }
+
+        /* 图例 */
+        .legend {
+            display: flex;
+            gap: 20px;
+            padding: 15px;
+            background: var(--white);
+            border: 3px solid var(--black);
+            margin-top: 10px;
+            flex-wrap: wrap;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 16px;
+        }
+
+        .legend-color {
+            width: 24px;
+            height: 24px;
+            border: 2px solid var(--black);
+        }
+
+        /* 加载提示 */
+        .loading-box {
+            text-align: center;
+            padding: 60px;
+            font-size: 24px;
+        }
+
+        .loading-box::after {
+            content: '';
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            background: var(--red-primary);
+            margin-left: 10px;
+            animation: blink 0.5s infinite;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
+        }
+
+        /* 空状态 */
+        .empty-state {
+            text-align: center;
+            padding: 80px;
+            color: #666;
+        }
+
+        .empty-state h2 {
+            font-family: 'Press Start 2P', cursive;
+            font-size: 18px;
+            color: var(--red-primary);
+            margin-bottom: 20px;
+        }
+
+        /* 网格布局 */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        @media (max-width: 1200px) {
+            .main-container {
+                grid-template-columns: 280px 1fr;
+            }
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .main-container {
+                grid-template-columns: 1fr;
+            }
+            .sidebar {
+                border-right: none;
+                border-bottom: 6px solid var(--black);
+                max-height: 300px;
+            }
+            h1 {
+                font-size: 16px;
+            }
+            .level-grid {
+                grid-template-columns: repeat(8, 1fr);
+            }
+        }
+
+        /* 滚动条样式 */
+        ::-webkit-scrollbar {
+            width: 12px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--gray-light);
+            border-left: 3px solid var(--black);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--red-primary);
+            border: 3px solid var(--black);
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--red-dark);
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>CPED 官员生涯追踪系统</h1>
+        <div class="subtitle">Career Path Visualization System</div>
+    </header>
+
+    <div class="main-container">
+        <!-- 左侧搜索栏 -->
+        <aside class="sidebar">
+            <div class="panel-title">SEARCH OFFICIAL</div>
+            <div class="search-box">
+                <input type="text" class="pixel-input" id="search-input" placeholder="输入姓名搜索...">
+                <button class="pixel-btn" onclick="searchOfficials()">SEARCH</button>
+                <button class="pixel-btn secondary" onclick="clearSearch()">CLEAR</button>
+            </div>
+
+            <div class="panel-title">OFFICIAL LIST</div>
+            <div class="officials-list" id="officials-list">
+                <div class="loading-box">Loading...</div>
+            </div>
+        </aside>
+
+        <!-- 右侧主内容 -->
+        <main class="content" id="main-content">
+            <div class="empty-state">
+                <h2>SELECT AN OFFICIAL</h2>
+                <p>从左侧列表选择一位官员查看详细生涯数据</p>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // 全局数据
+        let cpedData = {};
+        let officialsList = [];
+        let currentOfficial = null;
+        let mapChart = null;
+
+        // 级别配置
+        const levelConfig = {
+            '小于副处': { order: 1, color: '#ffcccc' },
+            '副处': { order: 2, color: '#ff9999' },
+            '正处': { order: 3, color: '#ff6666' },
+            '副厅': { order: 4, color: '#ff3333' },
+            '正厅': { order: 5, color: '#ff0000' },
+            '副部': { order: 6, color: '#cc0000' },
+            '正部': { order: 7, color: '#990000' },
+            '副国': { order: 8, color: '#660000' },
+            '正国': { order: 9, color: '#330000' }
+        };
+
+        // 初始化
+        async function init() {
+            try {
+                const response = await fetch('data/cped_data.json');
+                cpedData = await response.json();
+                officialsList = cpedData.officials;
+                renderOfficialsList(officialsList.slice(0, 50));
+            } catch (error) {
+                console.error('数据加载失败:', error);
+                document.getElementById('officials-list').innerHTML = `
+                    <div class="loading-box">Error loading data</div>
+                `;
+            }
+        }
+
+        // 渲染官员列表
+        function renderOfficialsList(list) {
+            const container = document.getElementById('officials-list');
+            if (list.length === 0) {
+                container.innerHTML = '<div class="loading-box">No results</div>';
+                return;
+            }
+
+            container.innerHTML = list.map(o => `
+                <div class="official-item" onclick="selectOfficial(${o.id})" data-id="${o.id}">
+                    <div>
+                        <div class="official-name">${o.name}</div>
+                        <div class="official-info">${o.nativePlace.province || ''} | ${o.education || ''}</div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // 搜索官员
+        function searchOfficials() {
+            const keyword = document.getElementById('search-input').value.trim();
+            if (!keyword) {
+                renderOfficialsList(officialsList.slice(0, 50));
+                return;
+            }
+
+            const filtered = officialsList.filter(o =>
+                o.name.includes(keyword) ||
+                (o.nativePlace.province && o.nativePlace.province.includes(keyword))
+            );
+            renderOfficialsList(filtered.slice(0, 50));
+        }
+
+        // 清空搜索
+        function clearSearch() {
+            document.getElementById('search-input').value = '';
+            renderOfficialsList(officialsList.slice(0, 50));
+        }
+
+        // 选择官员
+        async function selectOfficial(id) {
+            currentOfficial = cpedData.officials.find(o => o.id === id);
+            if (!currentOfficial) return;
+
+            // 更新列表选中状态
+            document.querySelectorAll('.official-item').forEach(item => {
+                item.classList.toggle('active', parseInt(item.dataset.id) === id);
+            });
+
+            // 渲染详情
+            renderOfficialDetail();
+        }
+
+        // 渲染官员详情
+        function renderOfficialDetail() {
+            const careers = cpedData.careers[currentOfficial.id] || [];
+            const timelineData = cpedData.levelTimelines[currentOfficial.id] || [];
+            const geoData = cpedData.geoMovements[currentOfficial.id] || [];
+
+            const content = document.getElementById('main-content');
+            content.innerHTML = `
+                <!-- 基本信息 -->
+                <div class="profile-card pixel-border-thick">
+                    <div class="profile-header">
+                        <div class="avatar">${currentOfficial.name[0]}</div>
+                        <div class="profile-basic">
+                            <div class="profile-name">${currentOfficial.name}</div>
+                            <div class="profile-stats">
+                                <div class="stat-box">
+                                    <div class="stat-label">性别</div>
+                                    <div class="stat-value">${currentOfficial.gender || '?'}</div>
+                                </div>
+                                <div class="stat-box">
+                                    <div class="stat-label">民族</div>
+                                    <div class="stat-value">${currentOfficial.ethnicity || '?'}</div>
+                                </div>
+                                <div class="stat-box">
+                                    <div class="stat-label">学历</div>
+                                    <div class="stat-value">${currentOfficial.education || '?'}</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: 15px;">
+                        <div class="stat-box">
+                            <div class="stat-label">籍贯</div>
+                            <div class="stat-value" style="font-size: 18px;">${currentOfficial.nativePlace.province || '-'} ${currentOfficial.nativePlace.city || ''}</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-label">出生日期</div>
+                            <div class="stat-value" style="font-size: 18px;">${currentOfficial.birthDate || '-'}</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-label">现状</div>
+                            <div class="stat-value" style="font-size: 18px;">${currentOfficial.status || '-'}</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-label">经历数</div>
+                            <div class="stat-value" style="font-size: 18px;">${careers.length}</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="dashboard-grid">
+                    <!-- 级别变化马赛克图 -->
+                    <div class="grid-section" style="grid-column: span 2;">
+                        <div class="section-title">LEVEL PROGRESSION (级别晋升马赛克图)</div>
+                        <div id="level-grid-container">
+                            ${generateLevelGrid(timelineData)}
+                        </div>
+                    </div>
+
+                    <!-- 地理变迁地图 -->
+                    <div class="grid-section">
+                        <div class="section-title">GEOGRAPHIC MOVEMENT (地理迁徙)</div>
+                        <div class="map-container" id="geo-map"></div>
+                    </div>
+                </div>
+
+                <!-- 详细履历 -->
+                <div class="grid-section">
+                    <div class="section-title">CAREER TIMELINE (详细履历)</div>
+                    <div class="timeline">
+                        ${careers.slice(0, 20).map(c => `
+                            <div class="timeline-item">
+                                <div class="timeline-date">${c.startDate || '未知'} ~ ${c.endDate || '至今'}</div>
+                                <div class="timeline-position">${c.specificPosition || c.position1 || '-'}</div>
+                                <div class="timeline-location">${c.province || ''} ${c.city || ''} ${c.county || ''}</div>
+                                ${c.level ? `<span class="timeline-level-tag">${c.level}</span>` : ''}
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+
+            // 初始化地图（异步）
+            initGeoMap(geoData);
+        }
+
+        // 生成马赛克级别图
+        function generateLevelGrid(timelineData) {
+            if (timelineData.length === 0) {
+                return '<div style="grid-column: span 12; text-align: center; padding: 40px;">无级别数据</div>';
+            }
+
+            // 级别顺序（从低到高）
+            const levels = ['小于副处', '副处', '正处', '副厅', '正厅', '副部', '正部', '副国', '正国'];
+
+            // 按年份分组，获取每年最高级别
+            const yearMaxLevel = {};
+            timelineData.forEach(item => {
+                const year = item.date ? parseInt(item.date.substring(0, 4)) : null;
+                if (year) {
+                    const levelOrder = levelConfig[item.level]?.order || 0;
+                    if (!yearMaxLevel[year] || levelOrder > yearMaxLevel[year].order) {
+                        yearMaxLevel[year] = { level: item.level, order: levelOrder };
+                    }
+                }
+            });
+
+            // 获取年份范围
+            const years = Object.keys(yearMaxLevel).map(Number).sort((a, b) => a - b);
+            if (years.length === 0) {
+                return '<div style="text-align: center; padding: 40px;">无级别数据</div>';
+            }
+
+            const minYear = years[0];
+            const maxYear = years[years.length - 1];
+
+            // 构建完整的年度最高级别记录（填充缺失年份）
+            let currentMaxOrder = 0;
+            const yearLevels = {};
+            for (let y = minYear; y <= maxYear; y++) {
+                if (yearMaxLevel[y]) {
+                    currentMaxOrder = Math.max(currentMaxOrder, yearMaxLevel[y].order);
+                }
+                yearLevels[y] = currentMaxOrder;
+            }
+
+            // 生成网格 HTML
+            // 第一行：年份标题
+            let html = '<div class="mosaic-grid">';
+
+            // 空白角落单元格
+            html += '<div class="mosaic-label">级别 / 年份</div>';
+
+            // 年份标题行
+            for (let y = minYear; y <= maxYear; y++) {
+                html += `<div class="mosaic-header">${y}</div>`;
+            }
+
+            // 为每个级别生成一行
+            levels.forEach((levelName, index) => {
+                const levelOrder = index + 1;
+
+                // 级别标签
+                html += `<div class="mosaic-label">${levelName}</div>`;
+
+                // 每年的单元格
+                for (let y = minYear; y <= maxYear; y++) {
+                    const yearTopOrder = yearLevels[y];
+                    // 如果该年的最高级别 >= 当前级别，则染色
+                    const isFilled = yearTopOrder >= levelOrder;
+                    html += `<div class="mosaic-cell ${isFilled ? 'filled' : 'empty'}"
+                        title="${y}年 ${levelName}${isFilled ? ' (已达成)' : ''}"></div>`;
+                }
+            });
+
+            html += '</div>';
+
+            // 添加说明
+            html += `
+                <div style="margin-top: 15px; padding: 15px; background: var(--white); border: 3px solid var(--black);">
+                    <p style="font-size: 16px; margin-bottom: 10px;">
+                        <strong>图表说明：</strong>横轴为年份，纵轴为级别。红色方块表示该年份已达到或超过该级别。
+                    </p>
+                    <p style="font-size: 14px; color: #666;">
+                        示例：如果某官员在2010年成为"正厅级"，则2010年及以后所有"小于副处"到"正厅"级别的格子都会显示为红色。
+                    </p>
+                </div>
+            `;
+
+            return html;
+        }
+
+        // 加载中国地图
+        async function loadChinaMap() {
+            try {
+                const response = await fetch('china.json');
+                if (!response.ok) throw new Error('Map not found');
+                const chinaJson = await response.json();
+                echarts.registerMap('china', chinaJson);
+                return true;
+            } catch (error) {
+                console.error('地图加载失败:', error);
+                return false;
+            }
+        }
+
+        // 初始化地理迁徙地图
+        async function initGeoMap(geoData) {
+            if (!geoData || geoData.length === 0) {
+                document.getElementById('geo-map').innerHTML = '<div class="loading-box">无地理数据</div>';
+                return;
+            }
+
+            // 确保地图已注册
+            const mapLoaded = await loadChinaMap();
+            if (!mapLoaded) {
+                document.getElementById('geo-map').innerHTML = '<div class="loading-box">地图加载失败</div>';
+                return;
+            }
+
+            // 省份坐标映射（简化版）
+            const provinceCoords = {
+                '北京市': [116.4, 39.9], '上海市': [121.4, 31.2], '天津市': [117.2, 39.1], '重庆市': [106.5, 29.6],
+                '河北省': [114.5, 38.0], '山西省': [112.5, 37.9], '辽宁省': [123.4, 41.8], '吉林省': [125.3, 43.9],
+                '黑龙江省': [126.6, 45.8], '江苏省': [118.8, 32.1], '浙江省': [120.2, 30.3], '安徽省': [117.3, 31.9],
+                '福建省': [119.3, 26.1], '江西省': [115.9, 28.7], '山东省': [117.0, 36.7], '河南省': [113.6, 34.8],
+                '湖北省': [114.3, 30.6], '湖南省': [113.0, 28.2], '广东省': [113.3, 23.1], '海南省': [110.3, 20.0],
+                '四川省': [104.1, 30.7], '贵州省': [106.7, 26.6], '云南省': [102.7, 25.0], '陕西省': [108.9, 34.3],
+                '甘肃省': [103.8, 36.1], '青海省': [101.8, 36.6], '台湾省': [121.5, 25.0], '内蒙古自治区': [111.7, 40.8],
+                '广西壮族自治区': [108.3, 22.8], '西藏自治区': [91.1, 29.7], '宁夏回族自治区': [106.3, 38.5],
+                '新疆维吾尔自治区': [87.6, 43.8], '香港特别行政区': [114.2, 22.3], '澳门特别行政区': [113.5, 22.2],
+                '中央': [116.4, 39.9]
+            };
+
+            // 构建迁徙数据
+            const moveData = [];
+            const points = [];
+
+            for (let i = 0; i < geoData.length - 1; i++) {
+                const from = geoData[i];
+                const to = geoData[i + 1];
+
+                const fromCoord = provinceCoords[from.province];
+                const toCoord = provinceCoords[to.province];
+
+                if (fromCoord && toCoord && from.province !== to.province) {
+                    moveData.push({
+                        fromName: from.province,
+                        toName: to.province,
+                        coords: [fromCoord, toCoord],
+                        value: i + 1
+                    });
+                }
+
+                if (fromCoord) {
+                    points.push({
+                        name: from.province,
+                        value: [...fromCoord, i + 1],
+                        itemStyle: { color: '#ff0040' }
+                    });
+                }
+            }
+
+            // 最后一个点
+            const last = geoData[geoData.length - 1];
+            const lastCoord = provinceCoords[last.province];
+            if (lastCoord) {
+                points.push({
+                    name: last.province,
+                    value: [...lastCoord, geoData.length],
+                    itemStyle: { color: '#cc0033' }
+                });
+            }
+
+            mapChart = echarts.init(document.getElementById('geo-map'));
+
+            mapChart.setOption({
+                backgroundColor: '#f0f0f0',
+                title: {
+                    text: `${currentOfficial.name} - 工作地迁徙`,
+                    left: 'center',
+                    top: 10,
+                    textStyle: {
+                        fontFamily: 'VT323',
+                        fontSize: 20,
+                        color: '#1a1a1a'
+                    }
+                },
+                geo: {
+                    map: 'china',
+                    roam: true,
+                    zoom: 1.2,
+                    label: {
+                        show: true,
+                        fontFamily: 'VT323',
+                        fontSize: 12,
+                        color: '#1a1a1a'
+                    },
+                    itemStyle: {
+                        areaColor: '#ffffff',
+                        borderColor: '#1a1a1a',
+                        borderWidth: 2
+                    },
+                    emphasis: {
+                        itemStyle: {
+                            areaColor: '#ffcccc'
+                        }
+                    }
+                },
+                series: [
+                    {
+                        name: '迁徙',
+                        type: 'lines',
+                        zlevel: 1,
+                        effect: {
+                            show: true,
+                            period: 6,
+                            trailLength: 0.7,
+                            color: '#ff0040',
+                            symbolSize: 3
+                        },
+                        lineStyle: {
+                            color: '#ff0040',
+                            width: 2,
+                            curveness: 0.2
+                        },
+                        data: moveData
+                    },
+                    {
+                        name: '工作地点',
+                        type: 'effectScatter',
+                        coordinateSystem: 'geo',
+                        zlevel: 2,
+                        rippleEffect: {
+                            brushType: 'stroke',
+                            scale: 3
+                        },
+                        label: {
+                            show: true,
+                            position: 'right',
+                            formatter: '{b}',
+                            fontFamily: 'VT323',
+                            fontSize: 14
+                        },
+                        symbolSize: function (val) {
+                            return 10 + val[2] * 2;
+                        },
+                        itemStyle: {
+                            color: '#ff0040'
+                        },
+                        data: points
+                    }
+                ]
+            });
+
+            window.addEventListener('resize', () => mapChart.resize());
+        }
+
+        // 启动
+        init();
+    </script>
+</body>
+</html>
