@@ -512,7 +512,7 @@
         // 初始化
         async function init() {
             try {
-                const response = await fetch('data/cped_data.json');
+                const response = await fetch('../../assets/data/cped/cped_data.json');
                 cpedData = await response.json();
                 officialsList = cpedData.officials;
                 renderOfficialsList(officialsList.slice(0, 50));
