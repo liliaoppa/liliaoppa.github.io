@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>矩阵图调试</title>
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <style>
+    body { font-family: monospace; padding: 20px; }
+    .debug { background: #f0f0f0; padding: 10px; margin: 10px 0; }
+    .error { color: red; }
+    .success { color: green; }
+  </style>
+</head>
+<body>
+  <h1>矩阵图调试</h1>
+  <div id="debug-info"></div>
+  <div id="matrix-container" style="border: 1px solid #ccc; min-height: 300px;"></div>
+
+  <script type="module">
+    const debug = document.getElementById('debug-info');
+    function log(msg, type = 'info') {
+      debug.innerHTML += `<div class="${type}">${msg}</div>`;
+    }
+
+    try {
+      // 测试导入
+      log('导入 config...');
+      const { LEVEL_CONFIG, LEVELS } = await import('./js/config.js');
+      log(`✓ LEVELS: ${LEVELS.length} 个级别`, 'success');
+
+      log('导入 helpers...');
+      const { extractYear } = await import('./js/utils/helpers.js');
+      log('✓ extractYear 导入成功', 'success');
+
+      // 测试数据
+      const timelineData = [
+        { date: '1990-01-01', level: '副处', position: '副县长' },
+        { date: '1995-01-01', level: '正处', position: '县长' },
+        { date: '2000-01-01', level: '副厅', position: '副市长' },
+        { date: '2005-01-01', level: '正厅', position: '市长' },
+      ];
+
+      log(`测试数据: ${timelineData.length} 条记录`);
+
+      // 测试 processData 逻辑
+      const yearMaxLevel = {};
+      timelineData.forEach(item => {
+        const year = extractYear(item.date);
+        log(`  提取年份: ${item.date} -> ${year}`);
+        if (year) {
+          const levelOrder = LEVEL_CONFIG[item.level]?.order || 0;
+          log(`  级别: ${item.level} -> order ${levelOrder}`);
+          if (!yearMaxLevel[year] || levelOrder > yearMaxLevel[year].order) {
+            yearMaxLevel[year] = { level: item.level, order: levelOrder };
+          }
+        }
+      });
+
+      log(`年份统计: ${Object.keys(yearMaxLevel).join(', ')}`);
+
+      // 测试绘制
+      const container = document.getElementById('matrix-container');
+      container.innerHTML = '';
+
+      const yearLevels = [];
+      for (let y = 1990; y <= 2005; y++) {
+        if (yearMaxLevel[y]) {
+          yearLevels.push({ year: y, maxOrder: yearMaxLevel[y].order, level: yearMaxLevel[y].level });
+        }
+      }
+
+      log(`绘制矩阵: ${yearLevels.length} 年`);
+
+      // 简单绘制
+      const cellSize = 30;
+      const svg = d3.select(container)
+        .append('svg')
+        .attr('width', yearLevels.length * cellSize + 100)
+        .attr('height', LEVELS.length * cellSize + 50);
+
+      svg.selectAll('rect')
+        .data(yearLevels)
+        .enter()
+        .append('rect')
+        .attr('x', (d, i) => i * cellSize + 50)
+        .attr('y', d => (LEVELS.length - d.maxOrder) * cellSize + 20)
+        .attr('width', cellSize - 2)
+        .attr('height', cellSize - 2)
+        .attr('fill', d => LEVEL_CONFIG[d.level]?.color || '#ccc')
+        .attr('stroke', '#333');
+
+      log('✓ 绘制完成', 'success');
+
+    } catch (e) {
+      log(`✗ 错误: ${e.message}`, 'error');
+      log(`堆栈: ${e.stack}`, 'error');
+    }
+  </script>
+</body>
+</html>
