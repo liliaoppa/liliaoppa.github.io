@@ -489,7 +489,6 @@
 
     <script>
         // 全局数据
-        let cpedData = {};
         let officialsList = [];
         let currentOfficial = null;
         let mapChart = null;
@@ -509,41 +508,38 @@
 
         const levels = ['小于副处', '副处', '正处', '副厅', '正厅', '副部', '正部', '副国', '正国'];
 
-        // 初始化
+        // 缓存已加载的官员数据
+        const dataCache = {};
+
+        // 初始化 - 只加载索引
         async function init() {
             const container = document.getElementById('officials-list');
             container.innerHTML = `
                 <div class="loading-box" id="loading-status">
                     <i class="fa fa-spinner fa-spin"></i><br>
-                    正在加载数据...<br>
-                    <small style="font-size: 12px; color: #666;">数据文件约 55MB，请耐心等待</small>
+                    正在加载索引...<br>
+                    <small style="font-size: 12px; color: #666;">约 1MB，请稍候</small>
                     <div style="margin-top: 10px; font-size: 12px;" id="loading-progress"></div>
                 </div>
             `;
 
             try {
                 const startTime = Date.now();
-                const response = await fetch('/assets/data/cped/cped_data.json');
+                const response = await fetch('/assets/data/cped/index.json');
 
                 if (!response.ok) {
                     throw new Error(`HTTP ${response.status}: ${response.statusText}`);
                 }
 
-                // 更新加载状态
-                const progressEl = document.getElementById('loading-progress');
-                if (progressEl) {
-                    progressEl.textContent = '正在解析数据...';
-                }
-
-                cpedData = await response.json();
-                officialsList = cpedData.officials || [];
+                const indexData = await response.json();
+                officialsList = indexData.officials || [];
 
                 const loadTime = ((Date.now() - startTime) / 1000).toFixed(1);
-                console.log(`数据加载完成: ${officialsList.length} 位官员, 耗时 ${loadTime}秒`);
+                console.log(`索引加载完成: ${officialsList.length} 位官员, 耗时 ${loadTime}秒`);
 
                 renderOfficialsList(officialsList.slice(0, 50));
             } catch (error) {
-                console.error('数据加载失败:', error);
+                console.error('索引加载失败:', error);
                 container.innerHTML = `
                     <div class="loading-box" style="color: #e74c3c;">
                         <i class="fa fa-exclamation-triangle"></i><br>
@@ -556,6 +552,37 @@
                     </div>
                 `;
             }
+        }
+
+        // 按需加载官员详细数据
+        async function loadOfficialData(officialId) {
+            const id = String(officialId);
+
+            // 检查缓存
+            if (dataCache[id]) {
+                return dataCache[id];
+            }
+
+            // 并行加载三个数据文件
+            const [careersRes, timelineRes, geoRes] = await Promise.all([
+                fetch(`/assets/data/cped/careers/${id}.json`).catch(() => null),
+                fetch(`/assets/data/cped/timelines/${id}.json`).catch(() => null),
+                fetch(`/assets/data/cped/geo/${id}.json`).catch(() => null)
+            ]);
+
+            // 解析数据
+            const [careers, timeline, geo] = await Promise.all([
+                careersRes?.ok ? careersRes.json() : [],
+                timelineRes?.ok ? timelineRes.json() : [],
+                geoRes?.ok ? geoRes.json() : []
+            ]);
+
+            const data = { careers, timeline, geo };
+
+            // 存入缓存
+            dataCache[id] = data;
+
+            return data;
         }
 
         // 渲染官员列表
@@ -604,7 +631,8 @@
 
         // 选择官员
         async function selectOfficial(id) {
-            currentOfficial = cpedData.officials.find(o => o.id === id);
+            // 从 officialsList 中查找（不再依赖 cpedData.officials）
+            currentOfficial = officialsList.find(o => o.id === id);
             if (!currentOfficial) return;
 
             // 更新列表选中状态
@@ -612,16 +640,46 @@
                 item.classList.toggle('active', parseInt(item.dataset.id) === id);
             });
 
-            // 渲染详情
-            renderOfficialDetail();
+            // 显示加载状态
+            const content = document.getElementById('main-content');
+            content.innerHTML = `
+                <div class="empty-state">
+                    <i class="fa fa-spinner fa-spin" style="font-size: 32px; color: #3498db;"></i>
+                    <h2 style="margin-top: 20px;">正在加载数据...</h2>
+                    <p>加载 ${currentOfficial.name} 的详细信息</p>
+                </div>
+            `;
+
+            try {
+                // 按需加载数据
+                const data = await loadOfficialData(id);
+                currentOfficialData = data;
+
+                // 渲染详情
+                renderOfficialDetail();
+            } catch (error) {
+                console.error('加载官员数据失败:', error);
+                content.innerHTML = `
+                    <div class="empty-state" style="color: #e74c3c;">
+                        <i class="fa fa-exclamation-triangle" style="font-size: 32px;"></i>
+                        <h2>数据加载失败</h2>
+                        <p>${error.message}</p>
+                        <button class="btn btn-primary" onclick="selectOfficial(${id})" style="margin-top: 15px;">
+                            <i class="fa fa-refresh"></i> 重试
+                        </button>
+                    </div>
+                `;
+            }
         }
+
+        // 当前官员的分片数据
+        let currentOfficialData = null;
 
         // 渲染官员详情
         function renderOfficialDetail() {
-            const id = String(currentOfficial.id);
-            const careers = cpedData.careers[id] || [];
-            const timelineData = cpedData.levelTimelines?.[id] || [];
-            const geoData = cpedData.geoMovements?.[id] || [];
+            const careers = currentOfficialData?.careers || [];
+            const timelineData = currentOfficialData?.timeline || [];
+            const geoData = currentOfficialData?.geo || [];
 
             const content = document.getElementById('main-content');
             content.innerHTML = `
